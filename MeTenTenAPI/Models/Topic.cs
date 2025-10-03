@@ -6,18 +6,16 @@ namespace MeTenTenAPI.Models
     {
         public int Id { get; set; }
         
-        [Required]
-        [MaxLength(200)]
-        public string Title { get; set; } = string.Empty;
+        [Required(ErrorMessage = "주제를 입력해주세요.")]
+        [MaxLength(200, ErrorMessage = "주제는 최대 200자까지 입력 가능합니다.")]
+        public string Subject { get; set; } = string.Empty;
         
-        [MaxLength(1000)]
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "날짜를 선택해주세요.")]
+        public DateTime TopicDate { get; set; } = DateTime.Today;
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
-        public DateTime? ScheduledDate { get; set; }
-        
-        public bool IsCompleted { get; set; } = false;
+        public bool IsActive { get; set; } = true;
         
         // 주제를 생성한 사용자
         public int CreatedByUserId { get; set; }

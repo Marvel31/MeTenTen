@@ -5,39 +5,34 @@ namespace MeTenTenAPI.DTOs
     public class TopicDto
     {
         public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string? Description { get; set; }
+        public string Subject { get; set; } = string.Empty;
+        public DateTime TopicDate { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? ScheduledDate { get; set; }
-        public bool IsCompleted { get; set; }
+        public bool IsActive { get; set; }
         public int CreatedByUserId { get; set; }
         public string CreatedByUserName { get; set; } = string.Empty;
-        public int DiaryCount { get; set; }
     }
 
     public class CreateTopicDto
     {
-        [Required]
-        [MaxLength(200)]
-        public string Title { get; set; } = string.Empty;
+        [Required(ErrorMessage = "주제를 입력해주세요.")]
+        [MaxLength(200, ErrorMessage = "주제는 최대 200자까지 입력 가능합니다.")]
+        public string Subject { get; set; } = string.Empty;
         
-        [MaxLength(1000)]
-        public string? Description { get; set; }
-        
-        public DateTime? ScheduledDate { get; set; }
+        [Required(ErrorMessage = "날짜를 선택해주세요.")]
+        public DateTime TopicDate { get; set; } = DateTime.Today;
     }
 
     public class UpdateTopicDto
     {
-        [MaxLength(200)]
-        public string? Title { get; set; }
+        [Required(ErrorMessage = "주제를 입력해주세요.")]
+        [MaxLength(200, ErrorMessage = "주제는 최대 200자까지 입력 가능합니다.")]
+        public string Subject { get; set; } = string.Empty;
         
-        [MaxLength(1000)]
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "날짜를 선택해주세요.")]
+        public DateTime TopicDate { get; set; } = DateTime.Today;
         
-        public DateTime? ScheduledDate { get; set; }
-        
-        public bool? IsCompleted { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
 

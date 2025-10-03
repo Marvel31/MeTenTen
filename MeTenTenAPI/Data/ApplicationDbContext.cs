@@ -40,8 +40,8 @@ namespace MeTenTenAPI.Data
             modelBuilder.Entity<Topic>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.TopicDate).IsRequired();
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
                 
                 // User와의 관계

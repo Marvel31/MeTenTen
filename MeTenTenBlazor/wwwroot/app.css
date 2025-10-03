@@ -458,30 +458,39 @@ h1:focus {
 }
 
 .topics-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
 }
 
 .topics-header h1 {
     color: #333;
-    margin: 0;
+    margin: 0 0 0.5rem 0;
     font-weight: 700;
 }
 
 .topics-header p {
     color: #666;
-    margin: 0.5rem 0 0 0;
-    flex-basis: 100%;
+    margin: 0 0 1.5rem 0;
 }
 
-.topics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.date-picker {
+    width: 200px;
+    padding: 0.5rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.topics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .topic-card {
@@ -510,13 +519,27 @@ h1:focus {
     margin-bottom: 1rem;
 }
 
-.topic-header h3 {
-    margin: 0;
-    color: #333;
-    font-size: 1.2rem;
+.topic-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.date-badge {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
     font-weight: 600;
-    flex: 1;
-    margin-right: 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+.day-name {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .topic-actions {
@@ -525,11 +548,16 @@ h1:focus {
     flex-shrink: 0;
 }
 
-.topic-description {
-    color: #666;
+.topic-content {
     margin-bottom: 1rem;
-    line-height: 1.5;
-    min-height: 3rem;
+}
+
+.topic-content h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 .topic-footer {
@@ -659,22 +687,22 @@ h1:focus {
         padding: 1rem;
     }
     
-    .topics-header {
+    .header-actions {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .topics-grid {
-        grid-template-columns: 1fr;
+    .date-picker {
+        width: 100%;
     }
     
     .topic-header {
         flex-direction: column;
         align-items: stretch;
+        gap: 1rem;
     }
     
     .topic-actions {
-        margin-top: 1rem;
         justify-content: flex-end;
     }
     

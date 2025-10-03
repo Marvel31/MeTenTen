@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents()
 // Add HttpClient for API calls
 builder.Services.AddHttpClient("MeTenTenAPI", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:5170/");
+    client.BaseAddress = new Uri("http://localhost:5170/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 

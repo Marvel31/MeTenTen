@@ -81,11 +81,25 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Ensure database is created
+// Ensure database is created and seed data
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated();
+    
+    // Create dummy user if not exists
+    if (!context.Users.Any())
+    {
+        var dummyUser = new MeTenTenAPI.Models.User
+        {
+            Name = "테스트 사용자",
+            Email = "test@example.com",
+            PasswordHash = "dummy_hash",
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Users.Add(dummyUser);
+        context.SaveChanges();
+    }
 }
 
 app.Run();

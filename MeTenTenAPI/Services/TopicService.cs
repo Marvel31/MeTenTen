@@ -18,22 +18,19 @@ namespace MeTenTenAPI.Services
         {
             var topics = await _context.Topics
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.Diaries)
                 .Where(t => t.CreatedByUserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
+                .OrderByDescending(t => t.TopicDate)
                 .ToListAsync();
 
             return topics.Select(t => new TopicDto
             {
                 Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
+                Subject = t.Subject,
+                TopicDate = t.TopicDate,
                 CreatedAt = t.CreatedAt,
-                ScheduledDate = t.ScheduledDate,
-                IsCompleted = t.IsCompleted,
+                IsActive = t.IsActive,
                 CreatedByUserId = t.CreatedByUserId,
-                CreatedByUserName = t.CreatedByUser.Name,
-                DiaryCount = t.Diaries.Count
+                CreatedByUserName = t.CreatedByUser.Name
             });
         }
 
@@ -41,7 +38,6 @@ namespace MeTenTenAPI.Services
         {
             var topic = await _context.Topics
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.Diaries)
                 .FirstOrDefaultAsync(t => t.Id == topicId && t.CreatedByUserId == userId);
 
             if (topic == null) return null;
@@ -49,14 +45,12 @@ namespace MeTenTenAPI.Services
             return new TopicDto
             {
                 Id = topic.Id,
-                Title = topic.Title,
-                Description = topic.Description,
+                Subject = topic.Subject,
+                TopicDate = topic.TopicDate,
                 CreatedAt = topic.CreatedAt,
-                ScheduledDate = topic.ScheduledDate,
-                IsCompleted = topic.IsCompleted,
+                IsActive = topic.IsActive,
                 CreatedByUserId = topic.CreatedByUserId,
-                CreatedByUserName = topic.CreatedByUser.Name,
-                DiaryCount = topic.Diaries.Count
+                CreatedByUserName = topic.CreatedByUser.Name
             };
         }
 
@@ -64,11 +58,11 @@ namespace MeTenTenAPI.Services
         {
             var topic = new Topic
             {
-                Title = createTopicDto.Title,
-                Description = createTopicDto.Description,
-                ScheduledDate = createTopicDto.ScheduledDate,
+                Subject = createTopicDto.Subject,
+                TopicDate = createTopicDto.TopicDate,
                 CreatedByUserId = userId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
             };
 
             _context.Topics.Add(topic);
@@ -76,20 +70,17 @@ namespace MeTenTenAPI.Services
 
             var createdTopic = await _context.Topics
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.Diaries)
                 .FirstAsync(t => t.Id == topic.Id);
 
             return new TopicDto
             {
                 Id = createdTopic.Id,
-                Title = createdTopic.Title,
-                Description = createdTopic.Description,
+                Subject = createdTopic.Subject,
+                TopicDate = createdTopic.TopicDate,
                 CreatedAt = createdTopic.CreatedAt,
-                ScheduledDate = createdTopic.ScheduledDate,
-                IsCompleted = createdTopic.IsCompleted,
+                IsActive = createdTopic.IsActive,
                 CreatedByUserId = createdTopic.CreatedByUserId,
-                CreatedByUserName = createdTopic.CreatedByUser.Name,
-                DiaryCount = createdTopic.Diaries.Count
+                CreatedByUserName = createdTopic.CreatedByUser.Name
             };
         }
 
@@ -97,44 +88,25 @@ namespace MeTenTenAPI.Services
         {
             var topic = await _context.Topics
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.Diaries)
                 .FirstOrDefaultAsync(t => t.Id == topicId && t.CreatedByUserId == userId);
 
             if (topic == null) return null;
 
-            if (!string.IsNullOrEmpty(updateTopicDto.Title))
-            {
-                topic.Title = updateTopicDto.Title;
-            }
-
-            if (updateTopicDto.Description != null)
-            {
-                topic.Description = updateTopicDto.Description;
-            }
-
-            if (updateTopicDto.ScheduledDate.HasValue)
-            {
-                topic.ScheduledDate = updateTopicDto.ScheduledDate.Value;
-            }
-
-            if (updateTopicDto.IsCompleted.HasValue)
-            {
-                topic.IsCompleted = updateTopicDto.IsCompleted.Value;
-            }
+            topic.Subject = updateTopicDto.Subject;
+            topic.TopicDate = updateTopicDto.TopicDate;
+            topic.IsActive = updateTopicDto.IsActive;
 
             await _context.SaveChangesAsync();
 
             return new TopicDto
             {
                 Id = topic.Id,
-                Title = topic.Title,
-                Description = topic.Description,
+                Subject = topic.Subject,
+                TopicDate = topic.TopicDate,
                 CreatedAt = topic.CreatedAt,
-                ScheduledDate = topic.ScheduledDate,
-                IsCompleted = topic.IsCompleted,
+                IsActive = topic.IsActive,
                 CreatedByUserId = topic.CreatedByUserId,
-                CreatedByUserName = topic.CreatedByUser.Name,
-                DiaryCount = topic.Diaries.Count
+                CreatedByUserName = topic.CreatedByUser.Name
             };
         }
 
@@ -156,25 +128,33 @@ namespace MeTenTenAPI.Services
             var today = DateTime.Today;
             var topics = await _context.Topics
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.Diaries)
-                .Where(t => t.CreatedByUserId == userId && 
-                           (t.ScheduledDate == null || t.ScheduledDate.Value.Date == today))
+                .Where(t => t.CreatedByUserId == userId && t.TopicDate.Date == today)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
 
             return topics.Select(t => new TopicDto
             {
                 Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
+                Subject = t.Subject,
+                TopicDate = t.TopicDate,
                 CreatedAt = t.CreatedAt,
-                ScheduledDate = t.ScheduledDate,
-                IsCompleted = t.IsCompleted,
+                IsActive = t.IsActive,
                 CreatedByUserId = t.CreatedByUserId,
-                CreatedByUserName = t.CreatedByUser.Name,
-                DiaryCount = t.Diaries.Count
+                CreatedByUserName = t.CreatedByUser.Name
             });
+        }
+
+        public async Task<bool> ToggleTopicStatusAsync(int topicId, int userId)
+        {
+            var topic = await _context.Topics
+                .FirstOrDefaultAsync(t => t.Id == topicId && t.CreatedByUserId == userId);
+
+            if (topic == null) return false;
+
+            topic.IsActive = !topic.IsActive;
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }
-
