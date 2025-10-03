@@ -9,11 +9,15 @@
 
 <div class="topics-container">
     <div class="topics-header">
-        <h1>📝 주제 관리</h1>
-        <p>일일 교환 일기를 위한 주제를 생성하고 관리하세요</p>
-        <button class="btn btn-primary" @onclick="ShowCreateModal">
-            <span class="bi bi-plus-circle"></span> 새 주제 추가
-        </button>
+        <h1>📝 일일 주제 관리</h1>
+        <p>매일 하나의 주제로 교환 일기를 시작하세요</p>
+        <div class="header-actions">
+            <input type="date" @bind="selectedDate" @bind:after="LoadTopicsForDate" 
+                   class="form-control date-picker" />
+            <button class="btn btn-primary" @onclick="ShowCreateModal">
+                <span class="bi bi-plus-circle"></span> 새 주제 추가
+            </button>
+        </div>
     </div>
 
     @if (isLoading)
@@ -26,12 +30,15 @@
     }
     else if (topics.Any())
     {
-        <div class="topics-grid">
-            @foreach (var topic in topics)
+        <div class="topics-list">
+            @foreach (var topic in topics.OrderByDescending(t => t.TopicDate))
             {
                 <div class="topic-card @(topic.IsActive ? "active" : "inactive")">
                     <div class="topic-header">
-                        <h3>@topic.Title</h3>
+                        <div class="topic-date">
+                            <span class="date-badge">@topic.TopicDate.ToString("MM/dd")</span>
+                            <span class="day-name">@topic.TopicDate.ToString("dddd")</span>
+                        </div>
                         <div class="topic-actions">
                             <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTopic(topic)">
                                 <span class="bi bi-pencil"></span>
@@ -45,7 +52,9 @@
                             </button>
                         </div>
                     </div>
-                    <p class="topic-description">@topic.Description</p>
+                    <div class="topic-content">
+                        <h3>@topic.Subject</h3>
+                    </div>
                     <div class="topic-footer">
                         <small class="text-muted">
                             생성일: @topic.CreatedAt.ToString("yyyy-MM-dd HH:mm")
@@ -62,8 +71,8 @@
     {
         <div class="empty-state">
             <div class="empty-icon">📝</div>
-            <h3>아직 주제가 없습니다</h3>
-            <p>첫 번째 주제를 추가해보세요!</p>
+            <h3>@selectedDate.ToString("yyyy년 MM월 dd일")의 주제가 없습니다</h3>
+            <p>오늘의 주제를 추가해보세요!</p>
             <button class="btn btn-primary" @onclick="ShowCreateModal">
                 <span class="bi bi-plus-circle"></span> 주제 추가하기
             </button>
@@ -85,18 +94,17 @@
                     <DataAnnotationsValidator />
                     
                     <div class="form-group">
-                        <label for="title">주제 제목 *</label>
-                        <InputText id="title" @bind-Value="currentTopic.Title" 
+                        <label for="subject">주제 *</label>
+                        <InputText id="subject" @bind-Value="currentTopic.Subject" 
                                   class="form-control" placeholder="예: 오늘 가장 기뻤던 순간" />
-                        <ValidationMessage For="@(() => currentTopic.Title)" class="text-danger" />
+                        <ValidationMessage For="@(() => currentTopic.Subject)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
-                        <label for="description">주제 설명</label>
-                        <InputTextArea id="description" @bind-Value="currentTopic.Description" 
-                                     class="form-control" rows="3" 
-                                     placeholder="이 주제에 대한 설명을 입력하세요 (선택사항)" />
-                        <ValidationMessage For="@(() => currentTopic.Description)" class="text-danger" />
+                        <label for="topicDate">날짜 *</label>
+                        <InputDate id="topicDate" @bind-Value="currentTopic.TopicDate" 
+                                  class="form-control" />
+                        <ValidationMessage For="@(() => currentTopic.TopicDate)" class="text-danger" />
                     </div>
 
                     @if (!string.IsNullOrEmpty(errorMessage))
@@ -130,18 +138,22 @@
     private bool isSaving = false;
     private string errorMessage = string.Empty;
     private CreateTopicRequest currentTopic = new();
+    private DateTime selectedDate = DateTime.Today;
+    private int? editingTopicId = null;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTopics();
+        await LoadTopicsForDate();
     }
 
-    private async Task LoadTopics()
+    private async Task LoadTopicsForDate()
     {
         isLoading = true;
         try
         {
             topics = await TopicService.GetTopicsAsync();
+            // 날짜별로 필터링 (실제로는 API에서 필터링해야 함)
+            topics = topics.Where(t => t.TopicDate.Date == selectedDate.Date).ToList();
         }
         catch (Exception ex)
         {
@@ -157,7 +169,11 @@
     private void ShowCreateModal()
     {
         isEditing = false;
-        currentTopic = new CreateTopicRequest();
+        editingTopicId = null;
+        currentTopic = new CreateTopicRequest
+        {
+            TopicDate = selectedDate
+        };
         errorMessage = string.Empty;
         showModal = true;
     }
@@ -165,10 +181,11 @@
     private void EditTopic(Topic topic)
     {
         isEditing = true;
+        editingTopicId = topic.Id;
         currentTopic = new CreateTopicRequest
         {
-            Title = topic.Title,
-            Description = topic.Description
+            Subject = topic.Subject,
+            TopicDate = topic.TopicDate
         };
         errorMessage = string.Empty;
         showModal = true;
@@ -178,6 +195,7 @@
     {
         showModal = false;
         isEditing = false;
+        editingTopicId = null;
         currentTopic = new CreateTopicRequest();
         errorMessage = string.Empty;
     }
@@ -190,17 +208,21 @@
 
         try
         {
-            if (isEditing)
+            if (isEditing && editingTopicId.HasValue)
             {
-                // TODO: Update topic when API supports it
-                // await TopicService.UpdateTopicAsync(topicId, updateRequest);
+                var updateRequest = new UpdateTopicRequest
+                {
+                    Subject = currentTopic.Subject,
+                    TopicDate = currentTopic.TopicDate
+                };
+                await TopicService.UpdateTopicAsync(editingTopicId.Value, updateRequest);
             }
             else
             {
                 await TopicService.CreateTopicAsync(currentTopic);
             }
 
-            await LoadTopics();
+            await LoadTopicsForDate();
             CloseModal();
         }
         catch (Exception ex)
@@ -221,7 +243,7 @@
             var success = await TopicService.ToggleTopicStatusAsync(topicId);
             if (success)
             {
-                await LoadTopics();
+                await LoadTopicsForDate();
             }
         }
         catch (Exception ex)
@@ -239,7 +261,7 @@
                 var success = await TopicService.DeleteTopicAsync(topicId);
                 if (success)
                 {
-                    await LoadTopics();
+                    await LoadTopicsForDate();
                 }
             }
             catch (Exception ex)

@@ -27,6 +27,22 @@
           "ASPNETCORE_ENVIRONMENT": "Development"
         }
       },
+      "HTTP Only": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "applicationUrl": "http://localhost:5283",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      },
+      "MeTenTen with API": {
+        "commandName": "Executable",
+        "executablePath": "powershell.exe",
+        "commandLineArgs": "-ExecutionPolicy Bypass -File \"$(ProjectDir)start-with-api.ps1\"",
+        "workingDirectory": "$(ProjectDir)",
+        "launchBrowser": false
+      },
       "IIS Express": {
         "commandName": "IISExpress",
         "launchBrowser": true,

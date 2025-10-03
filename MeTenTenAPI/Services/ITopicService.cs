@@ -10,6 +10,7 @@ namespace MeTenTenAPI.Services
         Task<TopicDto?> UpdateTopicAsync(int topicId, int userId, UpdateTopicDto updateTopicDto);
         Task<bool> DeleteTopicAsync(int topicId, int userId);
         Task<IEnumerable<TopicDto>> GetTodaysTopicsAsync(int userId);
+        Task<bool> ToggleTopicStatusAsync(int topicId, int userId);
     }
 }
 
