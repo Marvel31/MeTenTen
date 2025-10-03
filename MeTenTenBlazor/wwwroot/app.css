@@ -479,8 +479,20 @@ h1:focus {
     flex-wrap: wrap;
 }
 
-.date-picker {
-    width: 200px;
+.month-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.month-selector label {
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+
+.month-picker {
+    width: 150px;
     padding: 0.5rem;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
@@ -488,9 +500,10 @@ h1:focus {
 }
 
 .topics-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
 }
 
 .topic-card {
@@ -500,6 +513,9 @@ h1:focus {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     border-left: 4px solid #667eea;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .topic-card:hover {
@@ -507,10 +523,6 @@ h1:focus {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.topic-card.inactive {
-    opacity: 0.6;
-    border-left-color: #6c757d;
-}
 
 .topic-header {
     display: flex;
@@ -550,6 +562,10 @@ h1:focus {
 
 .topic-content {
     margin-bottom: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .topic-content h3 {
