@@ -16,6 +16,7 @@ builder.Services.AddHttpClient("MeTenTenAPI", client =>
 
 // Add services
 builder.Services.AddScoped<ITopicService, TopicService>();
+builder.Services.AddScoped<ITenTenService, TenTenService>();
 
 var app = builder.Build();
 
