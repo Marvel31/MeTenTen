@@ -8,7 +8,7 @@ namespace MeTenTenAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    // [Authorize] // 개발 중 인증 비활성화
     public class DiariesController : ControllerBase
     {
         private readonly IDiaryService _diaryService;
@@ -168,12 +168,18 @@ namespace MeTenTenAPI.Controllers
 
         private int GetCurrentUserId()
         {
+            // 개발 중에는 더미 사용자 ID 사용
+            return 1;
+            
+            // 실제 인증이 필요한 경우 아래 코드 사용
+            /*
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
                 throw new UnauthorizedAccessException("유효하지 않은 사용자입니다.");
             }
             return userId;
+            */
         }
     }
 }
