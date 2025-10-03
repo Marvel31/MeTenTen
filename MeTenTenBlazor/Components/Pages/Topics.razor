@@ -8,17 +8,20 @@
 <PageTitle>주제 관리 - MeTenTen</PageTitle>
 
 <div class="topics-container">
-    <div class="topics-header">
-        <h1>📝 일일 주제 관리</h1>
-        <p>매일 하나의 주제로 교환 일기를 시작하세요</p>
-        <div class="header-actions">
-            <input type="date" @bind="selectedDate" @bind:after="LoadTopicsForDate" 
-                   class="form-control date-picker" />
-            <button class="btn btn-primary" @onclick="ShowCreateModal">
-                <span class="bi bi-plus-circle"></span> 새 주제 추가
-            </button>
-        </div>
-    </div>
+           <div class="topics-header">
+               <h1>📝 주제 관리</h1>
+               <p>월별로 주제를 관리하고 새로운 주제를 추가하세요</p>
+               <div class="header-actions">
+                   <div class="month-selector">
+                       <label for="monthSelect">월 선택:</label>
+                       <input type="month" id="monthSelect" @bind="selectedMonth" @bind:after="LoadTopicsForMonth" 
+                              class="form-control month-picker" />
+                   </div>
+                   <button class="btn btn-primary" @onclick="ShowCreateModal">
+                       <span class="bi bi-plus-circle"></span> 새 주제 추가
+                   </button>
+               </div>
+           </div>
 
     @if (isLoading)
     {
@@ -31,23 +34,19 @@
     else if (topics.Any())
     {
         <div class="topics-list">
-            @foreach (var topic in topics.OrderByDescending(t => t.TopicDate))
-            {
-                <div class="topic-card @(topic.IsActive ? "active" : "inactive")">
-                    <div class="topic-header">
-                        <div class="topic-date">
-                            <span class="date-badge">@topic.TopicDate.ToString("MM/dd")</span>
-                            <span class="day-name">@topic.TopicDate.ToString("dddd")</span>
-                        </div>
+                   @foreach (var topic in topics)
+                   {
+                       <div class="topic-card @(topic.IsActive ? "active" : "inactive")">
+                           <div class="topic-header">
+                               <div class="topic-date">
+                                   <span class="date-badge">@topic.TopicDate.ToString("yyyy-MM-dd")</span>
+                                   <span class="day-name">@topic.TopicDate.ToString("dddd")</span>
+                               </div>
                         <div class="topic-actions">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTopic(topic)">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTopic(topic)" title="수정">
                                 <span class="bi bi-pencil"></span>
                             </button>
-                            <button class="btn btn-sm @(topic.IsActive ? "btn-warning" : "btn-success")" 
-                                    @onclick="() => ToggleTopicStatus(topic.Id)">
-                                @(topic.IsActive ? "비활성화" : "활성화")
-                            </button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteTopic(topic.Id)">
+                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteTopic(topic.Id)" title="삭제">
                                 <span class="bi bi-trash"></span>
                             </button>
                         </div>
@@ -59,25 +58,22 @@
                         <small class="text-muted">
                             생성일: @topic.CreatedAt.ToString("yyyy-MM-dd HH:mm")
                         </small>
-                        <span class="badge @(topic.IsActive ? "bg-success" : "bg-secondary")">
-                            @(topic.IsActive ? "활성" : "비활성")
-                        </span>
                     </div>
                 </div>
             }
         </div>
     }
-    else
-    {
-        <div class="empty-state">
-            <div class="empty-icon">📝</div>
-            <h3>@selectedDate.ToString("yyyy년 MM월 dd일")의 주제가 없습니다</h3>
-            <p>오늘의 주제를 추가해보세요!</p>
-            <button class="btn btn-primary" @onclick="ShowCreateModal">
-                <span class="bi bi-plus-circle"></span> 주제 추가하기
-            </button>
-        </div>
-    }
+           else
+           {
+               <div class="empty-state">
+                   <div class="empty-icon">📝</div>
+                   <h3>@selectedMonth.ToString("yyyy년 MM월")의 주제가 없습니다</h3>
+                   <p>이번 달의 첫 번째 주제를 추가해보세요!</p>
+                   <button class="btn btn-primary" @onclick="ShowCreateModal">
+                       <span class="bi bi-plus-circle"></span> 주제 추가하기
+                   </button>
+               </div>
+           }
 </div>
 
 <!-- Create/Edit Modal -->
@@ -138,22 +134,25 @@
     private bool isSaving = false;
     private string errorMessage = string.Empty;
     private CreateTopicRequest currentTopic = new();
-    private DateTime selectedDate = DateTime.Today;
+    private DateTime selectedMonth = DateTime.Today;
     private int? editingTopicId = null;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTopicsForDate();
+        await LoadTopicsForMonth();
     }
 
-    private async Task LoadTopicsForDate()
+    private async Task LoadTopicsForMonth()
     {
         isLoading = true;
         try
         {
             topics = await TopicService.GetTopicsAsync();
-            // 날짜별로 필터링 (실제로는 API에서 필터링해야 함)
-            topics = topics.Where(t => t.TopicDate.Date == selectedDate.Date).ToList();
+            // 선택된 월의 주제만 필터링하여 날짜순으로 정렬
+            topics = topics
+                .Where(t => t.TopicDate.Year == selectedMonth.Year && t.TopicDate.Month == selectedMonth.Month)
+                .OrderByDescending(t => t.TopicDate)
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -172,7 +171,7 @@
         editingTopicId = null;
         currentTopic = new CreateTopicRequest
         {
-            TopicDate = selectedDate
+            TopicDate = selectedMonth
         };
         errorMessage = string.Empty;
         showModal = true;
@@ -222,7 +221,7 @@
                 await TopicService.CreateTopicAsync(currentTopic);
             }
 
-            await LoadTopicsForDate();
+            await LoadTopicsForMonth();
             CloseModal();
         }
         catch (Exception ex)
@@ -236,21 +235,6 @@
         }
     }
 
-    private async Task ToggleTopicStatus(int topicId)
-    {
-        try
-        {
-            var success = await TopicService.ToggleTopicStatusAsync(topicId);
-            if (success)
-            {
-                await LoadTopicsForDate();
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"주제 상태 변경 중 오류가 발생했습니다: {ex.Message}";
-        }
-    }
 
     private async Task DeleteTopic(int topicId)
     {
@@ -261,7 +245,7 @@
                 var success = await TopicService.DeleteTopicAsync(topicId);
                 if (success)
                 {
-                    await LoadTopicsForDate();
+                    await LoadTopicsForMonth();
                 }
             }
             catch (Exception ex)
