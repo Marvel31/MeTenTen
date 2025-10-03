@@ -24,9 +24,9 @@ C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\staticwebas
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\MeTenTenBlazor.dll
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\refint\MeTenTenBlazor.dll
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\MeTenTenBlazor.pdb
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\MeTenTenBlazor.genruntimeconfig.cache
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\ref\MeTenTenBlazor.dll
+C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\MeTenTenBlazor.sourcelink.json

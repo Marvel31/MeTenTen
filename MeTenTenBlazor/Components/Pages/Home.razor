@@ -1,7 +1,41 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MeTenTen - 부부 교환 일기</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="welcome-container">
+    <div class="welcome-header">
+        <h1>MeTenTen에 오신 것을 환영합니다! 👋</h1>
+        <p class="welcome-subtitle">부부를 위한 특별한 교환 일기</p>
+    </div>
 
-Welcome to your new app.
+    <div class="dashboard-cards">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📝 오늘의 주제</h5>
+                <p class="card-text">새로운 주제를 만들거나 기존 주제를 확인해보세요</p>
+                <a href="/topics" class="btn btn-primary">주제 관리</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">💌 일기 작성</h5>
+                <p class="card-text">파트너에게 전할 마음을 적어보세요</p>
+                <a href="/diaries" class="btn btn-primary">일기 작성</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">👥 파트너</h5>
+                <p class="card-text">파트너와 연결하고 함께 일기를 나눠보세요</p>
+                <a href="/partner" class="btn btn-primary">파트너 관리</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="partner-info">
+        <h3>💕 MeTenTen과 함께하세요</h3>
+        <p>매일 새로운 주제로 서로에게 마음을 전하는 특별한 교환 일기를 시작해보세요</p>
+    </div>
+</div>

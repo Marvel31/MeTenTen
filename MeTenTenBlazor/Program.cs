@@ -1,10 +1,21 @@
 using MeTenTenBlazor.Components;
+using MeTenTenBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add HttpClient for API calls
+builder.Services.AddHttpClient("MeTenTenAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:5170/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Add services
+builder.Services.AddScoped<ITopicService, TopicService>();
 
 var app = builder.Build();
 
