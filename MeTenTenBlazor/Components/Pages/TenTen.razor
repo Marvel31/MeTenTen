@@ -63,16 +63,6 @@
                         <p>@tenTen.Content</p>
                     </div>
                     <div class="tenten-footer">
-                        <div class="tenten-tags">
-                            @if (!string.IsNullOrEmpty(tenTen.EmotionTag))
-                            {
-                                <span class="emotion-tag">@tenTen.EmotionTag</span>
-                            }
-                            @if (tenTen.ImportanceLevel.HasValue)
-                            {
-                                <span class="importance-tag">중요도: @tenTen.ImportanceLevel</span>
-                            }
-                        </div>
                         <div class="read-status">
                             @if (tenTen.IsReadByPartner)
                             {
@@ -133,27 +123,6 @@
                                      placeholder="10분간 마음을 적어보세요..." />
                         <ValidationMessage For="@(() => currentTenTen.Content)" class="text-danger" />
                         <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="emotionTag">감정 태그</label>
-                            <InputText id="emotionTag" @bind-Value="currentTenTen.EmotionTag" 
-                                      class="form-control" placeholder="예: 기쁨, 슬픔, 사랑" />
-                            <ValidationMessage For="@(() => currentTenTen.EmotionTag)" class="text-danger" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="importanceLevel">중요도</label>
-                            <InputSelect id="importanceLevel" @bind-Value="currentTenTen.ImportanceLevel" class="form-control">
-                                <option value="">선택하세요</option>
-                                <option value="1">1 - 낮음</option>
-                                <option value="2">2 - 보통</option>
-                                <option value="3">3 - 보통+</option>
-                                <option value="4">4 - 높음</option>
-                                <option value="5">5 - 매우 높음</option>
-                            </InputSelect>
-                            <ValidationMessage For="@(() => currentTenTen.ImportanceLevel)" class="text-danger" />
-                        </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(errorMessage))
@@ -255,9 +224,7 @@
         currentTenTen = new CreateTenTenRequest
         {
             Content = tenTen.Content,
-            TopicId = tenTen.TopicId,
-            EmotionTag = tenTen.EmotionTag,
-            ImportanceLevel = tenTen.ImportanceLevel
+            TopicId = tenTen.TopicId
         };
         errorMessage = string.Empty;
         showModal = true;
@@ -284,9 +251,7 @@
             {
                 var updateRequest = new UpdateTenTenRequest
                 {
-                    Content = currentTenTen.Content,
-                    EmotionTag = currentTenTen.EmotionTag,
-                    ImportanceLevel = currentTenTen.ImportanceLevel
+                    Content = currentTenTen.Content
                 };
                 await TenTenService.UpdateTenTenAsync(editingTenTenId.Value, updateRequest);
             }
