@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MeTenTenBlazor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+55ed2d4c61db32b0c8c7d7a8e2238a575ef3d180")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5664b3ad37d4232f487ddab044377539047b756e")]
 [assembly: System.Reflection.AssemblyProductAttribute("MeTenTenBlazor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MeTenTenBlazor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1035,7 +1035,7 @@ C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\186mopdjfz-tptq2av103.gz
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\qwkpwira3r-lfu7j35m59.gz
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\sg59h87nvn-oyz0vx2fzb.gz
-C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\qps90w5i7w-fihuvo54xj.gz
-C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\ll1zt8gdfp-ieao525ui4.gz
-C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\f5tk78eq9z-uovw1mf4y9.gz
 C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\MeTenTen.CC863D97.Up2Date
+C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\qps90w5i7w-qp25s8d8zs.gz
+C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\ll1zt8gdfp-u5n7ymltbm.gz
+C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\obj\Debug\net8.0\compressed\f5tk78eq9z-lcn5k9ni1w.gz
