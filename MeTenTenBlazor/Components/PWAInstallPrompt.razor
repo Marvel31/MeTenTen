@@ -1,0 +1,77 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+@if (showInstallPrompt)
+{
+    <div class="pwa-install-prompt">
+        <div class="install-content">
+            <div class="install-icon">📱</div>
+            <div class="install-text">
+                <h4>MeTenTen 앱으로 설치하세요!</h4>
+                <p>홈 화면에 추가하여 언제든지 빠르게 접근하세요</p>
+            </div>
+            <div class="install-actions">
+                <button class="btn btn-primary btn-sm" @onclick="InstallApp">
+                    설치하기
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" @onclick="DismissPrompt">
+                    나중에
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool showInstallPrompt = false;
+    private IJSObjectReference? deferredPrompt;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckInstallability();
+        }
+    }
+
+    private async Task CheckInstallability()
+    {
+        try
+        {
+            var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pwa-install.js");
+            var canInstall = await module.InvokeAsync<bool>("canInstall");
+            
+            if (canInstall)
+            {
+                showInstallPrompt = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"PWA install check failed: {ex.Message}");
+        }
+    }
+
+    private async Task InstallApp()
+    {
+        try
+        {
+            var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pwa-install.js");
+            await module.InvokeVoidAsync("installApp");
+            showInstallPrompt = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"PWA install failed: {ex.Message}");
+        }
+    }
+
+    private void DismissPrompt()
+    {
+        showInstallPrompt = false;
+        StateHasChanged();
+    }
+}

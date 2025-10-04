@@ -1,39 +1,18 @@
-using MeTenTenBlazor.Components;
+using MeTenTenBlazor;
 using MeTenTenBlazor.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<MeTenTenBlazor.Components.App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+// Add services for Vercel deployment (local storage based)
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+builder.Services.AddScoped<ITopicService, LocalTopicService>();
+builder.Services.AddScoped<ITenTenService, LocalTenTenService>();
 
-// Add HttpClient for API calls
-builder.Services.AddHttpClient("MeTenTenAPI", client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5170/");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
+// Add HttpClient
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-// Add services
-builder.Services.AddScoped<ITopicService, TopicService>();
-builder.Services.AddScoped<ITenTenService, TenTenService>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-app.UseAntiforgery();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Run();
+await builder.Build().RunAsync();
