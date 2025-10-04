@@ -2,7 +2,6 @@
 @using MeTenTenBlazor.Models
 @using MeTenTenBlazor.Services
 @using System.Linq
-@using Microsoft.AspNetCore.WebUtilities
 @inject ITenTenService TenTenService
 @inject ITopicService TopicService
 @inject IJSRuntime JSRuntime
@@ -181,9 +180,15 @@
         
         // 쿼리 파라미터에서 topicId 확인
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("topicId", out var topicIdValues))
+        var query = uri.Query;
+        if (query.Contains("topicId="))
         {
-            if (int.TryParse(topicIdValues.FirstOrDefault(), out var topicId))
+            var topicIdStart = query.IndexOf("topicId=") + 8;
+            var topicIdEnd = query.IndexOf("&", topicIdStart);
+            if (topicIdEnd == -1) topicIdEnd = query.Length;
+            
+            var topicIdString = query.Substring(topicIdStart, topicIdEnd - topicIdStart);
+            if (int.TryParse(topicIdString, out var topicId))
             {
                 selectedTopicId = topicId;
             }

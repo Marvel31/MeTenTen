@@ -13,13 +13,19 @@ namespace MeTenTenBlazor.Services
             _localStorage = localStorage;
         }
 
+        public async Task<List<TenTen>> GetTenTensAsync()
+        {
+            var tenTens = await _localStorage.GetItemAsync<List<TenTen>>(TENTENS_KEY);
+            return tenTens ?? new List<TenTen>();
+        }
+
         public async Task<List<TenTen>> GetTenTensByTopicAsync(int topicId)
         {
             var tenTens = await _localStorage.GetItemAsync<List<TenTen>>(TENTENS_KEY);
             return tenTens?.Where(t => t.TopicId == topicId).ToList() ?? new List<TenTen>();
         }
 
-        public async Task<TenTen?> GetTenTenAsync(int id)
+        public async Task<TenTen?> GetTenTenByIdAsync(int id)
         {
             var tenTens = await _localStorage.GetItemAsync<List<TenTen>>(TENTENS_KEY);
             return tenTens?.FirstOrDefault(t => t.Id == id);
@@ -33,7 +39,7 @@ namespace MeTenTenBlazor.Services
             {
                 Id = tenTens.Count > 0 ? tenTens.Max(t => t.Id) + 1 : 1,
                 TopicId = request.TopicId,
-                TopicSubject = request.TopicSubject,
+                TopicSubject = "주제", // 기본값, 실제로는 TopicService에서 가져와야 함
                 Content = request.Content,
                 CreatedAt = DateTime.Now,
                 UserId = 1,
@@ -53,21 +59,30 @@ namespace MeTenTenBlazor.Services
             
             if (tenTen != null)
             {
-                tenTen.Content = request.Content;
+                if (!string.IsNullOrEmpty(request.Content))
+                {
+                    tenTen.Content = request.Content;
+                }
                 await _localStorage.SetItemAsync(TENTENS_KEY, tenTens);
             }
 
             return tenTen!;
         }
 
-        public async Task DeleteTenTenAsync(int id)
+        public async Task<bool> DeleteTenTenAsync(int id)
         {
             var tenTens = await _localStorage.GetItemAsync<List<TenTen>>(TENTENS_KEY) ?? new List<TenTen>();
-            tenTens.RemoveAll(t => t.Id == id);
-            await _localStorage.SetItemAsync(TENTENS_KEY, tenTens);
+            var tenTenToDelete = tenTens.FirstOrDefault(t => t.Id == id);
+            if (tenTenToDelete != null)
+            {
+                tenTens.Remove(tenTenToDelete);
+                await _localStorage.SetItemAsync(TENTENS_KEY, tenTens);
+                return true;
+            }
+            return false;
         }
 
-        public async Task MarkAsReadAsync(int id)
+        public async Task<bool> MarkAsReadAsync(int id)
         {
             var tenTens = await _localStorage.GetItemAsync<List<TenTen>>(TENTENS_KEY) ?? new List<TenTen>();
             var tenTen = tenTens.FirstOrDefault(t => t.Id == id);
@@ -76,7 +91,9 @@ namespace MeTenTenBlazor.Services
             {
                 tenTen.IsReadByPartner = true;
                 await _localStorage.SetItemAsync(TENTENS_KEY, tenTens);
+                return true;
             }
+            return false;
         }
     }
 }

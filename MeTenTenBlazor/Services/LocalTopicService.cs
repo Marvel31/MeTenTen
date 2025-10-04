@@ -19,7 +19,7 @@ namespace MeTenTenBlazor.Services
             return topics ?? new List<Topic>();
         }
 
-        public async Task<Topic?> GetTopicAsync(int id)
+        public async Task<Topic?> GetTopicByIdAsync(int id)
         {
             var topics = await GetTopicsAsync();
             return topics.FirstOrDefault(t => t.Id == id);
@@ -60,11 +60,31 @@ namespace MeTenTenBlazor.Services
             return topic!;
         }
 
-        public async Task DeleteTopicAsync(int id)
+        public async Task<bool> DeleteTopicAsync(int id)
         {
             var topics = await GetTopicsAsync();
-            topics.RemoveAll(t => t.Id == id);
-            await _localStorage.SetItemAsync(TOPICS_KEY, topics);
+            var topicToDelete = topics.FirstOrDefault(t => t.Id == id);
+            if (topicToDelete != null)
+            {
+                topics.Remove(topicToDelete);
+                await _localStorage.SetItemAsync(TOPICS_KEY, topics);
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> ToggleTopicStatusAsync(int id)
+        {
+            var topics = await GetTopicsAsync();
+            var topic = topics.FirstOrDefault(t => t.Id == id);
+            
+            if (topic != null)
+            {
+                topic.IsActive = !topic.IsActive;
+                await _localStorage.SetItemAsync(TOPICS_KEY, topics);
+                return true;
+            }
+            return false;
         }
     }
 }

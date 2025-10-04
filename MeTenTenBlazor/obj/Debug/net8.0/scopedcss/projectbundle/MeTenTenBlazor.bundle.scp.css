@@ -1,4 +1,4 @@
-/* _content/MeTenTenBlazor/Components/Layout/MainLayout.razor.rz.scp.css */
+/* /Components/Layout/MainLayout.razor.rz.scp.css */
 .page[b-bflufefjc1] {
     position: relative;
     display: flex;
@@ -95,7 +95,7 @@ main[b-bflufefjc1] {
         right: 0.75rem;
         top: 0.5rem;
     }
-/* _content/MeTenTenBlazor/Components/Layout/NavMenu.razor.rz.scp.css */
+/* /Components/Layout/NavMenu.razor.rz.scp.css */
 .navbar-toggler[b-q3xx73p83s] {
     appearance: none;
     cursor: pointer;
