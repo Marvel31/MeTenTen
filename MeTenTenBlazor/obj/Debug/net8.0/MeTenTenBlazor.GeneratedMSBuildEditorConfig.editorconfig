@@ -1,17 +1,21 @@
 is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
 build_property.TargetFramework = net8.0
 build_property.TargetPlatformMinVersion = 
-build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = 
 build_property.ProjectTypeGuids = 
-build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = false
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
-build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = browser
 build_property.RootNamespace = MeTenTenBlazor
 build_property.RootNamespace = MeTenTenBlazor
 build_property.ProjectDir = C:\Users\jongm\source\repos\MeTenTen\MeTenTenBlazor\
 build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
@@ -22,6 +26,10 @@ build_property.EnableCodeStyleSeverity =
 
 [C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/App.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/ConversationExamples.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb252ZXJzYXRpb25FeGFtcGxlcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/Counter.razor]
@@ -36,8 +44,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/Prayers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcmF5ZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/TenTen.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xUZW5UZW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/Topics.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xUb3BpY3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/PWAInstallPrompt.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQV0FJbnN0YWxsUHJvbXB0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jongm/source/repos/MeTenTen/MeTenTenBlazor/Components/Routes.razor]
