@@ -1,7 +1,4 @@
 {
-  "buildCommand": "dotnet publish MeTenTenBlazor/MeTenTenBlazor.csproj -c Release -o ./publish",
-  "outputDirectory": "publish/wwwroot",
-  "installCommand": "dotnet restore",
   "rewrites": [
     {
       "source": "/(.*)",
