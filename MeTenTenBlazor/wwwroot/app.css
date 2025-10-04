@@ -708,6 +708,12 @@ h1:focus {
     margin: 0 auto;
 }
 
+.examples-container .navigation-breadcrumb {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e1e5e9;
+}
+
 .examples-header {
     text-align: center;
     margin-bottom: 3rem;
@@ -745,19 +751,42 @@ h1:focus {
 
 .category-header {
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    padding: 1.5rem 2rem;
     border-bottom: 2px solid #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
-.category-header h3 {
-    color: #333;
-    margin-bottom: 0.5rem;
+.category-header:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.category-title h3 {
+    color: white;
+    margin: 0 0 0.5rem 0;
     font-weight: 600;
+    font-size: 1.5rem;
 }
 
-.category-header p {
-    color: #666;
+.category-title p {
+    color: white;
     margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.category-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
 }
 
 .examples-list {
@@ -1259,5 +1288,186 @@ h1:focus {
     .modal-content {
         width: 95%;
         margin: 1rem;
+    }
+}
+
+/* Prayers Page Styles */
+.prayers-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.prayers-container .navigation-breadcrumb {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.prayers-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.prayers-header h1 {
+    color: #333;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.prayers-header p {
+    color: #666;
+    font-size: 1.2rem;
+}
+
+.prayers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.prayer-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.prayer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.prayer-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.prayer-header:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.prayer-title h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.prayer-title p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.prayer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.prayer-content {
+    padding: 2rem;
+}
+
+.prayer-text {
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.prayer-line {
+    margin: 0.5rem 0;
+    padding-left: 0;
+}
+
+.prayer-tips {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.prayer-tips h2 {
+    text-align: center;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.tip-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.tip-item h4 {
+    color: #667eea;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tip-item p {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Responsive Design for Prayers */
+@media (max-width: 768px) {
+    .prayers-container {
+        padding: 1rem;
+    }
+    
+    .prayers-header h1 {
+        font-size: 2rem;
+    }
+    
+    .prayer-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .prayer-content {
+        padding: 1.5rem;
+    }
+    
+    .prayer-text {
+        font-size: 1rem;
+    }
+    
+    .tips-grid {
+        grid-template-columns: 1fr;
     }
 }
