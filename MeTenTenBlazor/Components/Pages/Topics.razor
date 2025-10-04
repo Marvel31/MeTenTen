@@ -3,14 +3,15 @@
 @using MeTenTenBlazor.Services
 @inject ITopicService TopicService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PageTitle>주제 관리 - MeTenTen</PageTitle>
+<PageTitle>10&10 - MeTenTen</PageTitle>
 
 <div class="topics-container">
            <div class="topics-header">
-               <h1>📝 주제 관리</h1>
-               <p>월별로 주제를 관리하고 새로운 주제를 추가하세요</p>
+               <h1>💕 10&10</h1>
+               <p>10분간 마음을 적고 10분간 대화를 나누세요</p>
                <div class="header-actions">
                    <div class="month-selector">
                        <label for="monthSelect">월 선택:</label>
@@ -36,31 +37,30 @@
         <div class="topics-list">
                    @foreach (var topic in topics)
                    {
-                       <div class="topic-card @(topic.IsActive ? "active" : "inactive")">
-                           <div class="topic-header">
+                       <div class="topic-list-item" @onclick="() => NavigateToTenTen(topic.Id)">
+                           <div class="topic-info">
                                <div class="topic-date">
                                    <span class="date-badge">@topic.TopicDate.ToString("yyyy-MM-dd")</span>
                                    <span class="day-name">@topic.TopicDate.ToString("dddd")</span>
                                </div>
-                        <div class="topic-actions">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTopic(topic)" title="수정">
-                                <span class="bi bi-pencil"></span>
-                            </button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteTopic(topic.Id)" title="삭제">
-                                <span class="bi bi-trash"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="topic-content">
-                        <h3>@topic.Subject</h3>
-                    </div>
-                    <div class="topic-footer">
-                        <small class="text-muted">
-                            생성일: @topic.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                        </small>
-                    </div>
-                </div>
-            }
+                               <div class="topic-subject">
+                                   <h4>@topic.Subject</h4>
+                                   <small class="text-muted">생성일: @topic.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                               </div>
+                           </div>
+                           <div class="topic-actions">
+                               <button class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)" title="수정">
+                                   <span class="bi bi-pencil"></span>
+                               </button>
+                               <button class="btn btn-sm btn-danger" @onclick:stopPropagation="true" @onclick="() => DeleteTopic(topic.Id)" title="삭제">
+                                   <span class="bi bi-trash"></span>
+                               </button>
+                               <button class="btn btn-sm btn-success" @onclick:stopPropagation="true" @onclick="() => NavigateToTenTen(topic.Id)" title="10&10 작성">
+                                   <span class="bi bi-pencil-square"></span> 10&10
+                               </button>
+                           </div>
+                       </div>
+                   }
         </div>
     }
            else
@@ -253,5 +253,11 @@
                 errorMessage = $"주제 삭제 중 오류가 발생했습니다: {ex.Message}";
             }
         }
+    }
+
+    private void NavigateToTenTen(int topicId)
+    {
+        // 10&10 페이지로 이동하면서 선택된 주제 ID를 쿼리 파라미터로 전달
+        NavigationManager.NavigateTo($"/tenten?topicId={topicId}");
     }
 }
