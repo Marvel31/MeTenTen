@@ -7,16 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add HttpClient for API calls
-builder.Services.AddHttpClient("MeTenTenAPI", client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5170/");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
-
-// Add services
-builder.Services.AddScoped<ITopicService, TopicService>();
-builder.Services.AddScoped<ITenTenService, TenTenService>();
+// Add services for Vercel deployment (local storage based)
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+builder.Services.AddScoped<ITopicService, LocalTopicService>();
+builder.Services.AddScoped<ITenTenService, LocalTenTenService>();
 
 var app = builder.Build();
 

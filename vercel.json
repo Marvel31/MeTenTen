@@ -1,0 +1,33 @@
+{
+  "buildCommand": "dotnet publish MeTenTenBlazor/MeTenTenBlazor.csproj -c Release -o ./publish",
+  "outputDirectory": "publish/wwwroot",
+  "framework": "blazor",
+  "installCommand": "dotnet restore",
+  "devCommand": "dotnet run --project MeTenTenBlazor",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        }
+      ]
+    }
+  ]
+}
