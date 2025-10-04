@@ -12,6 +12,16 @@
 <PageTitle>10&10 - MeTenTen</PageTitle>
 
 <div class="tenten-container">
+    <div class="navigation-breadcrumb">
+        <a href="/" class="breadcrumb-link">
+            <span class="bi bi-house"></span> 홈
+        </a>
+        <span class="breadcrumb-separator">></span>
+        <a href="/topics" class="breadcrumb-link">10&10 관리</a>
+        <span class="breadcrumb-separator">></span>
+        <span class="breadcrumb-current">10&10 작성</span>
+    </div>
+    
     <div class="tenten-header">
         <h1>💕 10&10</h1>
         <p>10분간 마음을 적고 10분간 대화를 나누세요</p>
@@ -66,10 +76,6 @@
                             {
                                 <span class="badge bg-success">읽음</span>
                             }
-                            else
-                            {
-                                <span class="badge bg-warning">읽지 않음</span>
-                            }
                         </div>
                     </div>
                 </div>
@@ -89,35 +95,46 @@
     }
 </div>
 
-<!-- Create/Edit Modal -->
+<!-- Create/Edit Full Screen -->
 @if (showModal)
 {
-    <div class="modal-backdrop" @onclick="CloseModal">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h5>@(isEditing ? "10&10 수정" : "새 10&10 작성")</h5>
-                <button type="button" class="btn-close" @onclick="CloseModal"></button>
+    <div class="fullscreen-editor">
+        <div class="editor-container">
+            <div class="editor-header">
+                <h2>@(isEditing ? "10&10 수정" : "새 10&10 작성")</h2>
+                <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">
+                    <span class="bi bi-x-lg"></span> 닫기
+                </button>
             </div>
-            <div class="modal-body">
+            <div class="editor-content">
                 <EditForm Model="currentTenTen" OnValidSubmit="SaveTenTen">
                     <DataAnnotationsValidator />
                     
                     <div class="form-group">
-                        <label for="topic">주제 *</label>
-                        <InputSelect id="topic" @bind-Value="currentTenTen.TopicId" class="form-control">
-                            <option value="">주제를 선택하세요</option>
-                            @foreach (var topic in topics)
+                        <label>주제</label>
+                        <div class="selected-topic-display">
+                            @if (selectedTopicId > 0)
                             {
-                                <option value="@topic.Id">@topic.Subject (@topic.TopicDate.ToString("MM/dd"))</option>
+                                var selectedTopic = topics.FirstOrDefault(t => t.Id == selectedTopicId);
+                                if (selectedTopic != null)
+                                {
+                                    <div class="topic-info">
+                                        <span class="topic-subject">@selectedTopic.Subject</span>
+                                        <span class="topic-date">(@selectedTopic.TopicDate.ToString("yyyy-MM-dd"))</span>
+                                    </div>
+                                }
                             }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => currentTenTen.TopicId)" class="text-danger" />
+                            else
+                            {
+                                <span class="text-muted">주제가 선택되지 않았습니다</span>
+                            }
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="content">10&10 내용 *</label>
                         <InputTextArea id="content" @bind-Value="currentTenTen.Content" 
-                                     class="form-control" rows="8" 
+                                     class="form-control content-textarea" rows="20" 
                                      placeholder="10분간 마음을 적어보세요..." />
                         <ValidationMessage For="@(() => currentTenTen.Content)" class="text-danger" />
                         <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
@@ -130,7 +147,7 @@
                         </div>
                     }
 
-                    <div class="modal-actions">
+                    <div class="editor-actions">
                         <button type="button" class="btn btn-secondary" @onclick="CloseModal">취소</button>
                         <button type="submit" class="btn btn-primary" disabled="@isSaving">
                             @if (isSaving)
@@ -221,7 +238,10 @@
     {
         isEditing = false;
         editingTenTenId = null;
-        currentTenTen = new CreateTenTenRequest();
+        currentTenTen = new CreateTenTenRequest
+        {
+            TopicId = selectedTopicId
+        };
         errorMessage = string.Empty;
         showModal = true;
     }
