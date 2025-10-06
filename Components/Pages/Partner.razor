@@ -1,0 +1,163 @@
+@page "/partner"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Services
+@inject ITenTenService TenTenService
+@inject ITopicService TopicService
+
+@code {
+    private List<MeTenTenMaui.Models.TenTen> allTenTens = new();
+    private List<MeTenTenMaui.Models.TenTen> recentTenTens = new();
+    private bool isLoading = true;
+    private int totalTenTens = 0;
+    private int readTenTens = 0;
+    private int daysActive = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            allTenTens = await TenTenService.GetTenTensAsync();
+            recentTenTens = allTenTens.OrderByDescending(t => t.CreatedAt).ToList();
+            
+            totalTenTens = allTenTens.Count;
+            readTenTens = allTenTens.Count(t => t.IsReadByPartner);
+            daysActive = allTenTens.Select(t => t.CreatedAt.Date).Distinct().Count();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkAsRead(int id)
+    {
+        try
+        {
+            var success = await TenTenService.MarkAsReadAsync(id);
+            if (success)
+            {
+                await LoadData();
+            }
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+}
+
+<PageTitle>파트너 - MeTenTen</PageTitle>
+
+<div class="partner-container">
+    <div class="navigation-breadcrumb">
+        <a href="/" class="breadcrumb-link">
+            <span class="bi bi-house"></span> 홈
+        </a>
+        <span class="breadcrumb-separator">></span>
+        <span class="breadcrumb-current">파트너</span>
+    </div>
+    
+    <div class="partner-header">
+        <h1>👥 파트너</h1>
+        <p>부부 간의 소통 기록을 확인하고 서로의 마음을 나누어보세요.</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="partner-stats">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-content">
+                    <h3>@totalTenTens</h3>
+                    <p>총 10&10 수</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💖</div>
+                <div class="stat-content">
+                    <h3>@readTenTens</h3>
+                    <p>읽은 10&10</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-content">
+                    <h3>@daysActive</h3>
+                    <p>활동 일수</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-tenTens">
+            <h2>최근 10&10</h2>
+            @if (recentTenTens.Any())
+            {
+                <div class="tenten-list">
+                    @foreach (var tenTen in recentTenTens.Take(5))
+                    {
+                        <div class="tenten-card @(tenTen.IsReadByPartner ? "read" : "unread")">
+                            <div class="tenten-header">
+                                <div class="tenten-meta">
+                                    <span class="topic-badge">@tenTen.TopicSubject</span>
+                                    <span class="date-info">작성일: @tenTen.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                                </div>
+                                <div class="tenten-actions">
+                                    @if (!tenTen.IsReadByPartner)
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => MarkAsRead(tenTen.Id)" title="읽음으로 표시">
+                                            <span class="bi bi-check-circle"></span> 읽음
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div class="tenten-content">
+                                <p>@(tenTen.Content.Length > 100 ? tenTen.Content.Substring(0, 100) + "..." : tenTen.Content)</p>
+                            </div>
+                            <div class="tenten-footer">
+                                <div class="read-status">
+                                    @if (tenTen.IsReadByPartner)
+                                    {
+                                        <span class="badge bg-success">읽음</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">읽지 않음</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">💌</div>
+                    <h3>아직 10&10이 없습니다</h3>
+                    <p>첫 번째 10&10을 작성해보세요.</p>
+                    <a href="/tenten" class="btn btn-primary">10&10 작성하기</a>
+                </div>
+            }
+        </div>
+    }
+</div>
+

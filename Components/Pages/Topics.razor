@@ -1,0 +1,218 @@
+@page "/topics"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Services
+@inject ITopicService TopicService
+@inject NavigationManager NavigationManager
+
+<PageTitle>주제 관리 - MeTenTen</PageTitle>
+
+<div class="topics-container">
+    <div class="navigation-breadcrumb">
+        <a href="/" class="breadcrumb-link">
+            <span class="bi bi-house"></span> 홈
+        </a>
+        <span class="breadcrumb-separator">></span>
+        <span class="breadcrumb-current">주제 관리</span>
+    </div>
+    
+    <div class="topics-header">
+        <h1>📋 주제 관리</h1>
+        <p>10&10을 위한 주제들을 관리하고 새로운 주제를 추가해보세요.</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (topics.Any())
+    {
+        <div class="topics-list">
+            @foreach (var topic in topics.OrderByDescending(t => t.TopicDate))
+            {
+                <div class="topic-list-item" @onclick="() => NavigateToTenTen(topic.Id)">
+                    <div class="topic-info">
+                        <div class="topic-subject">
+                            <h4>@topic.Subject</h4>
+                            <small>@topic.TopicDate.ToString("yyyy년 MM월 dd일")</small>
+                        </div>
+                    </div>
+                    <div class="topic-status">
+                        <span class="status-badge status-empty">
+                            <span class="bi bi-pencil"></span> 작성하기
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>아직 주제가 없습니다</h3>
+            <p>새로운 주제를 추가하여 10&10을 시작해보세요.</p>
+            <button class="btn btn-primary" @onclick="ShowCreateModal">
+                <span class="bi bi-plus-circle"></span> 새 주제 추가
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal-backdrop" @onclick="CloseModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h5>@(isEditing ? "주제 수정" : "새 주제 추가")</h5>
+                <button type="button" class="btn-close" @onclick="CloseModal">×</button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="currentTopic" OnValidSubmit="SaveTopic">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group">
+                        <label for="subject">주제 *</label>
+                        <InputText id="subject" @bind-Value="currentTopic.Subject" 
+                                 class="form-control" placeholder="주제를 입력해주세요" />
+                        <ValidationMessage For="@(() => currentTopic.Subject)" class="text-danger" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">설명</label>
+                        <InputTextArea id="description" @bind-Value="currentTopic.Description" 
+                                     class="form-control" rows="3" placeholder="주제에 대한 설명을 입력해주세요" />
+                        <ValidationMessage For="@(() => currentTopic.Description)" class="text-danger" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="topicDate">주제 날짜 *</label>
+                        <InputDate id="topicDate" @bind-Value="currentTopic.TopicDate" 
+                                 class="form-control" />
+                        <ValidationMessage For="@(() => currentTopic.TopicDate)" class="text-danger" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">취소</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            @(isEditing ? "수정" : "추가")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Topic> topics = new();
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool isEditing = false;
+    private bool isSaving = false;
+    private string errorMessage = string.Empty;
+    private CreateTopicRequest currentTopic = new();
+    private int? editingTopicId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTopics();
+    }
+
+    private async Task LoadTopics()
+    {
+        isLoading = true;
+        try
+        {
+            topics = await TopicService.GetTopicsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"주제를 불러오는 중 오류가 발생했습니다: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        isEditing = false;
+        editingTopicId = null;
+        currentTopic = new CreateTopicRequest
+        {
+            TopicDate = DateTime.Today
+        };
+        errorMessage = string.Empty;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        isEditing = false;
+        editingTopicId = null;
+        currentTopic = new CreateTopicRequest();
+        errorMessage = string.Empty;
+    }
+
+    private async Task SaveTopic()
+    {
+        isSaving = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            if (isEditing && editingTopicId.HasValue)
+            {
+                var updateRequest = new UpdateTopicRequest
+                {
+                    Subject = currentTopic.Subject,
+                    Description = currentTopic.Description,
+                    TopicDate = currentTopic.TopicDate,
+                    IsActive = true
+                };
+                await TopicService.UpdateTopicAsync(editingTopicId.Value, updateRequest);
+            }
+            else
+            {
+                await TopicService.CreateTopicAsync(currentTopic);
+            }
+
+            await LoadTopics();
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"주제 저장 중 오류가 발생했습니다: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToTenTen(int topicId)
+    {
+        NavigationManager.NavigateTo($"/tenten?topicId={topicId}");
+    }
+}
