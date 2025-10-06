@@ -13,6 +13,8 @@ namespace MeTenTenMaui.Models
         
         [Required(ErrorMessage = "주제 날짜를 선택해주세요.")]
         public DateTime TopicDate { get; set; }
+        
+        public DateTime CreatedAt { get; set; }
     }
 }
 

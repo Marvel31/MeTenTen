@@ -1,0 +1,197 @@
+@page "/prayer"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Services
+@inject IPrayerService PrayerService
+
+<PageTitle>주요 기도문 - MeTenTen</PageTitle>
+
+<div class="prayer-container">
+    <div class="prayer-header">
+        <h1>🙏 주요 기도문</h1>
+        <p class="prayer-subtitle">부부를 위한 기도문과 영적 성장을 위한 자료</p>
+    </div>
+
+    <div class="prayer-categories">
+        <div class="category-tabs">
+            <button class="tab-btn @(selectedCategory == "all" ? "active" : "")" @onclick='() => SelectCategory("all")'>
+                전체
+            </button>
+            <button class="tab-btn @(selectedCategory == "marriage" ? "active" : "")" @onclick='() => SelectCategory("marriage")'>
+                부부 기도
+            </button>
+            <button class="tab-btn @(selectedCategory == "family" ? "active" : "")" @onclick='() => SelectCategory("family")'>
+                가족 기도
+            </button>
+            <button class="tab-btn @(selectedCategory == "daily" ? "active" : "")" @onclick='() => SelectCategory("daily")'>
+                일상 기도
+            </button>
+        </div>
+    </div>
+
+    <div class="prayer-list">
+        @if (filteredPrayers.Any())
+        {
+            <div class="prayer-cards">
+                @foreach (var prayer in filteredPrayers)
+                {
+                    <div class="prayer-card">
+                        <div class="prayer-card-header">
+                            <div class="prayer-category">@GetCategoryName(prayer.Category)</div>
+                            <div class="prayer-title">@prayer.Title</div>
+                        </div>
+                        <div class="prayer-content">
+                            <p>@prayer.Content</p>
+                        </div>
+                        <div class="prayer-footer">
+                            <div class="prayer-tags">
+                                @if (!string.IsNullOrEmpty(prayer.Tags))
+                                {
+                                    @foreach (var tag in prayer.Tags.Split(','))
+                                    {
+                                        <span class="tag">@tag.Trim()</span>
+                                    }
+                                }
+                            </div>
+                            <div class="prayer-actions">
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowPrayerDetail(prayer)">
+                                    <span class="bi bi-eye"></span> 자세히 보기
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CopyToClipboard(prayer.Content)">
+                                    <span class="bi bi-clipboard"></span> 복사
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">🙏</div>
+                <h3>해당 카테고리의 기도문이 없습니다</h3>
+                <p>다른 카테고리를 선택해보세요.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 기도문 상세 모달 -->
+@if (showDetailModal && selectedPrayer != null)
+{
+    <div class="modal-overlay" @onclick="CloseDetailModal">
+        <div class="modal-content prayer-detail-modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>@selectedPrayer.Title</h3>
+                <button class="btn-close" @onclick="CloseDetailModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="prayer-detail-content">
+                    <div class="prayer-detail-category">
+                        <span class="category-badge">@GetCategoryName(selectedPrayer.Category)</span>
+                    </div>
+                    <div class="prayer-detail-text">
+                        @((MarkupString)selectedPrayer.Content.Replace("\n", "<br/>"))
+                    </div>
+                    @if (!string.IsNullOrEmpty(selectedPrayer.Tags))
+                    {
+                        <div class="prayer-detail-tags">
+                            <strong>태그:</strong>
+                            @foreach (var tag in selectedPrayer.Tags.Split(','))
+                            {
+                                <span class="tag">@tag.Trim()</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="CloseDetailModal">닫기</button>
+                <button class="btn btn-primary" @onclick="() => CopyToClipboard(selectedPrayer.Content)">
+                    <span class="bi bi-clipboard"></span> 복사
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MeTenTenMaui.Models.Prayer> prayers = new();
+    private List<MeTenTenMaui.Models.Prayer> filteredPrayers = new();
+    private string selectedCategory = "all";
+    private bool showDetailModal = false;
+    private MeTenTenMaui.Models.Prayer? selectedPrayer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPrayers();
+        FilterPrayers();
+    }
+
+    private async Task LoadPrayers()
+    {
+        try
+        {
+            prayers = await PrayerService.GetAllPrayersAsync();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
+    private void SelectCategory(string category)
+    {
+        selectedCategory = category;
+        FilterPrayers();
+    }
+
+    private void FilterPrayers()
+    {
+        if (selectedCategory == "all")
+        {
+            filteredPrayers = prayers.ToList();
+        }
+        else
+        {
+            filteredPrayers = prayers.Where(p => p.Category == selectedCategory).ToList();
+        }
+    }
+
+    private string GetCategoryName(string category)
+    {
+        return category switch
+        {
+            "marriage" => "부부 기도",
+            "family" => "가족 기도",
+            "daily" => "일상 기도",
+            _ => "기타"
+        };
+    }
+
+    private void ShowPrayerDetail(MeTenTenMaui.Models.Prayer prayer)
+    {
+        selectedPrayer = prayer;
+        showDetailModal = true;
+    }
+
+    private void CloseDetailModal()
+    {
+        showDetailModal = false;
+        selectedPrayer = null;
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            // 클립보드 복사 기능 (실제 구현은 플랫폼에 따라 다름)
+            // 여기서는 간단한 알림으로 대체
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+}

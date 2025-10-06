@@ -49,6 +49,11 @@ namespace MeTenTenMaui.Services
             return Task.FromResult(_topics.Where(t => t.IsActive).ToList());
         }
 
+        public Task<List<Topic>> GetAllTopicsAsync()
+        {
+            return Task.FromResult(_topics.ToList());
+        }
+
         public Task<Topic?> GetTopicByIdAsync(int id)
         {
             var result = _topics.FirstOrDefault(t => t.Id == id);
@@ -63,7 +68,7 @@ namespace MeTenTenMaui.Services
                 Subject = request.Subject,
                 Description = request.Description,
                 TopicDate = request.TopicDate,
-                CreatedAt = DateTime.Now,
+                CreatedAt = request.CreatedAt,
                 IsActive = true
             };
 

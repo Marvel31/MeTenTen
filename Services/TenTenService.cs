@@ -44,6 +44,11 @@ namespace MeTenTenMaui.Services
             return Task.FromResult(_tenTens.ToList());
         }
 
+        public Task<List<TenTen>> GetAllTenTensAsync()
+        {
+            return Task.FromResult(_tenTens.ToList());
+        }
+
         public Task<List<TenTen>> GetTenTensByTopicAsync(int topicId)
         {
             var result = _tenTens.Where(t => t.TopicId == topicId).ToList();
@@ -88,6 +93,20 @@ namespace MeTenTenMaui.Services
             tenTen.ImportanceLevel = request.ImportanceLevel;
 
             return Task.FromResult(tenTen);
+        }
+
+        public Task<TenTen> UpdateTenTenAsync(TenTen tenTen)
+        {
+            var existingTenTen = _tenTens.FirstOrDefault(t => t.Id == tenTen.Id);
+            if (existingTenTen == null)
+                throw new ArgumentException($"TenTen with ID {tenTen.Id} not found");
+
+            existingTenTen.Content = tenTen.Content;
+            existingTenTen.UpdatedAt = DateTime.Now;
+            existingTenTen.EmotionTag = tenTen.EmotionTag;
+            existingTenTen.ImportanceLevel = tenTen.ImportanceLevel;
+
+            return Task.FromResult(existingTenTen);
         }
 
         public Task<bool> DeleteTenTenAsync(int id)

@@ -1,0 +1,224 @@
+@page "/feeling"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Services
+@inject IFeelingService FeelingService
+@implements IDisposable
+
+<PageTitle>느낌 표현 - MeTenTen</PageTitle>
+
+<div class="feeling-container">
+    <div class="feeling-header">
+        <h1>😊 느낌 표현</h1>
+        <p class="feeling-subtitle">오늘의 감정과 느낌을 자유롭게 표현해보세요</p>
+    </div>
+
+    <div class="feeling-actions">
+        <button class="btn btn-primary" @onclick="ShowCreateModal">
+            <span class="bi bi-plus-circle"></span> 새 느낌 표현하기
+        </button>
+    </div>
+
+    <div class="feeling-list">
+        @if (feelings.Any())
+        {
+            <div class="feeling-cards">
+                @foreach (var feeling in feelings.OrderByDescending(f => f.CreatedAt))
+                {
+                    <div class="feeling-card">
+                        <div class="feeling-card-header">
+                            <div class="feeling-emoji">@feeling.Emoji</div>
+                            <div class="feeling-meta">
+                                <span class="feeling-date">@feeling.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                                <span class="feeling-mood">@feeling.Mood</span>
+                            </div>
+                        </div>
+                        <div class="feeling-content">
+                            <p>@feeling.Content</p>
+                        </div>
+                        <div class="feeling-actions">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditFeeling(feeling)">
+                                <span class="bi bi-pencil"></span> 수정
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteFeeling(feeling.Id)">
+                                <span class="bi bi-trash"></span> 삭제
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">😊</div>
+                <h3>아직 표현한 느낌이 없습니다</h3>
+                <p>첫 번째 느낌을 표현해보세요!</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 느낌 표현 모달 -->
+@if (showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>@(isEditing ? "느낌 수정" : "새 느낌 표현")</h3>
+                <button class="btn-close" @onclick="CloseModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="currentFeeling" OnValidSubmit="SaveFeeling">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group">
+                        <label for="emoji">이모지</label>
+                        <div class="emoji-selector">
+                            @foreach (var emoji in emojis)
+                            {
+                                <button type="button" class="emoji-btn @(currentFeeling.Emoji == emoji ? "selected" : "")" 
+                                        @onclick="() => SelectEmoji(emoji)">
+                                    @emoji
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mood">기분</label>
+                        <InputSelect id="mood" @bind-Value="currentFeeling.Mood" class="form-control">
+                            <option value="">기분을 선택하세요</option>
+                            <option value="😊 행복">😊 행복</option>
+                            <option value="😢 슬픔">😢 슬픔</option>
+                            <option value="😠 화남">😠 화남</option>
+                            <option value="😰 불안">😰 불안</option>
+                            <option value="😌 평온">😌 평온</option>
+                            <option value="😍 사랑">😍 사랑</option>
+                            <option value="😔 우울">😔 우울</option>
+                            <option value="😤 짜증">😤 짜증</option>
+                            <option value="🤗 감동">🤗 감동</option>
+                            <option value="😴 피곤">😴 피곤</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => currentFeeling.Mood)" class="text-danger" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">느낌 내용 *</label>
+                        <InputTextArea id="content" @bind-Value="currentFeeling.Content" 
+                                     class="form-control" rows="8"
+                                     placeholder="오늘의 감정과 느낌을 자유롭게 표현해보세요..." />
+                        <ValidationMessage For="@(() => currentFeeling.Content)" class="text-danger" />
+                        <small class="form-text text-muted">최소 5자 이상 입력해주세요.</small>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">취소</button>
+                        <button type="submit" class="btn btn-primary">저장</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MeTenTenMaui.Models.Feeling> feelings = new();
+    private bool showModal = false;
+    private bool isEditing = false;
+    private MeTenTenMaui.Models.Feeling currentFeeling = new();
+    private readonly string[] emojis = { "😊", "😢", "😠", "😰", "😌", "😍", "😔", "😤", "🤗", "😴", "😄", "😭", "😡", "😨", "😇", "🥰", "😞", "😫", "🥺", "😴" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFeelings();
+    }
+
+    private async Task LoadFeelings()
+    {
+        try
+        {
+            feelings = await FeelingService.GetAllFeelingsAsync();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        isEditing = false;
+        currentFeeling = new MeTenTenMaui.Models.Feeling
+        {
+            Emoji = "😊",
+            Mood = "😊 행복",
+            CreatedAt = DateTime.Now
+        };
+        showModal = true;
+    }
+
+    private void EditFeeling(MeTenTenMaui.Models.Feeling feeling)
+    {
+        isEditing = true;
+        currentFeeling = new MeTenTenMaui.Models.Feeling
+        {
+            Id = feeling.Id,
+            Emoji = feeling.Emoji,
+            Mood = feeling.Mood,
+            Content = feeling.Content,
+            CreatedAt = feeling.CreatedAt
+        };
+        showModal = true;
+    }
+
+    private void SelectEmoji(string emoji)
+    {
+        currentFeeling.Emoji = emoji;
+    }
+
+    private async Task SaveFeeling()
+    {
+        try
+        {
+            if (isEditing)
+            {
+                await FeelingService.UpdateFeelingAsync(currentFeeling);
+            }
+            else
+            {
+                await FeelingService.CreateFeelingAsync(currentFeeling);
+            }
+            
+            await LoadFeelings();
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
+    private async Task DeleteFeeling(int id)
+    {
+        try
+        {
+            await FeelingService.DeleteFeelingAsync(id);
+            await LoadFeelings();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        currentFeeling = new MeTenTenMaui.Models.Feeling();
+    }
+
+    public void Dispose()
+    {
+        // 정리 작업
+    }
+}

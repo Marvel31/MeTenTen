@@ -20,6 +20,8 @@ public static class MauiProgram
 		// 서비스 등록
 		builder.Services.AddSingleton<ITenTenService, TenTenService>();
 		builder.Services.AddSingleton<ITopicService, TopicService>();
+		builder.Services.AddSingleton<IFeelingService, FeelingService>();
+		builder.Services.AddSingleton<IPrayerService, PrayerService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

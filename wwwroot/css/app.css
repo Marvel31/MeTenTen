@@ -990,3 +990,511 @@ h1:focus {
         padding: 1rem;
     }
 }
+
+/* 새로운 페이지 스타일 */
+
+/* 느낌 표현 페이지 */
+.feeling-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.feeling-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.feeling-header h1 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.feeling-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.feeling-actions {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.feeling-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.feeling-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feeling-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.feeling-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.feeling-emoji {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+}
+
+.feeling-meta {
+    flex: 1;
+}
+
+.feeling-date {
+    display: block;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.feeling-mood {
+    display: block;
+    color: #333;
+    font-weight: 500;
+}
+
+.feeling-content {
+    margin-bottom: 1rem;
+}
+
+.feeling-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: #444;
+}
+
+.feeling-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.emoji-selector {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.emoji-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #e1e5e9;
+    background: white;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emoji-btn:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.emoji-btn.selected {
+    border-color: #667eea;
+    background: #667eea;
+    color: white;
+}
+
+/* 기도문 페이지 */
+.prayer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.prayer-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.prayer-header h1 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.prayer-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.prayer-categories {
+    margin-bottom: 2rem;
+}
+
+.category-tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #e1e5e9;
+    background: white;
+    border-radius: 25px;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tab-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.prayer-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.prayer-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.prayer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.prayer-card-header {
+    margin-bottom: 1rem;
+}
+
+.prayer-category {
+    display: inline-block;
+    background: #f8f9fa;
+    color: #666;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.prayer-title {
+    color: #333;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.prayer-content {
+    margin-bottom: 1rem;
+}
+
+.prayer-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: #444;
+}
+
+.prayer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.prayer-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.prayer-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.prayer-detail-modal {
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.prayer-detail-content {
+    line-height: 1.8;
+}
+
+.prayer-detail-category {
+    margin-bottom: 1rem;
+}
+
+.category-badge {
+    background: #667eea;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.prayer-detail-text {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.prayer-detail-tags {
+    margin-top: 1rem;
+}
+
+.prayer-detail-tags strong {
+    color: #666;
+    margin-right: 0.5rem;
+}
+
+/* 10&10 페이지 개선 */
+.month-filter {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-section label {
+    font-weight: 500;
+    color: #333;
+    min-width: 80px;
+}
+
+.filter-actions {
+    text-align: right;
+}
+
+.topics-list h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.topic-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.topic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.topic-date {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.topic-content h4 {
+    color: #333;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.topic-content p {
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.topic-actions {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+.topic-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+}
+
+.topic-info h4 {
+    color: #333;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.topic-info p {
+    color: #666;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+}
+
+.topic-info small {
+    color: #999;
+}
+
+.ten-ten-modal {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* 빈 상태 스타일 */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+    .feeling-container,
+    .prayer-container,
+    .tenten-container {
+        padding: 1rem;
+    }
+    
+    .feeling-cards,
+    .prayer-cards,
+    .topics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .category-tabs {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    
+    .tab-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .filter-actions {
+        text-align: center;
+    }
+    
+    .emoji-selector {
+        grid-template-columns: repeat(8, 1fr);
+    }
+    
+    .prayer-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .prayer-actions {
+        justify-content: center;
+    }
+}
