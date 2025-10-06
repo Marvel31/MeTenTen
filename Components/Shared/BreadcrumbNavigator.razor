@@ -1,0 +1,24 @@
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
+
+<div class="breadcrumb-navigator">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/" class="breadcrumb-link">
+                    <span class="bi bi-house"></span> 홈
+                </a>
+            </li>
+            @if (!string.IsNullOrEmpty(CurrentPageTitle))
+            {
+                <li class="breadcrumb-item active" aria-current="page">
+                    @CurrentPageTitle
+                </li>
+            }
+        </ol>
+    </nav>
+</div>
+
+@code {
+    [Parameter] public string CurrentPageTitle { get; set; } = string.Empty;
+}

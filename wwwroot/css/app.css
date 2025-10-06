@@ -1498,3 +1498,72 @@ h1:focus {
         justify-content: center;
     }
 }
+
+/* 브레드크럼 네비게이터 스타일 */
+.breadcrumb-navigator {
+    background: white;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 0.75rem 2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background: transparent;
+    border-radius: 0;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item {
+    padding-left: 0.5rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+    margin-right: 0.5rem;
+    font-weight: 500;
+}
+
+.breadcrumb-item.active {
+    color: #495057;
+    font-weight: 500;
+}
+
+.breadcrumb-link {
+    color: #667eea;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #5a6fd8;
+    text-decoration: none;
+}
+
+.breadcrumb-link .bi {
+    font-size: 0.9rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .breadcrumb-navigator {
+        padding: 0.5rem 1rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        margin-right: 0.25rem;
+    }
+}
