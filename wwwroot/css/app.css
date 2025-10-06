@@ -1567,3 +1567,234 @@ h1:focus {
         margin-right: 0.25rem;
     }
 }
+
+/* 10&10 화면 개선 스타일 */
+
+/* 선택된 월 표시 */
+.selected-month-display {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.selected-month-display h3 {
+    color: #667eea;
+    font-weight: 600;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    background: #f8f9ff;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* 주제 리스트 테이블 스타일 */
+.topics-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+    overflow: hidden;
+}
+
+.topic-list-header {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 100px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    font-weight: 600;
+    color: #333;
+}
+
+.topic-list-item {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 100px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    align-items: center;
+}
+
+.topic-list-item:hover {
+    background: #f8f9ff;
+}
+
+.topic-list-item:last-child {
+    border-bottom: none;
+}
+
+.topic-date {
+    color: #666;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.topic-subject h5 {
+    margin: 0 0 0.25rem 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.topic-subject p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.topic-status {
+    text-align: center;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.topic-actions {
+    text-align: center;
+}
+
+/* 전체 화면 작성 화면 */
+.fullscreen-writing-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.writing-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-left,
+.header-right {
+    flex: 0 0 auto;
+}
+
+.header-center {
+    flex: 1;
+    text-align: center;
+}
+
+.header-center h2 {
+    margin: 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.writing-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.topic-info-readonly {
+    background: #f8f9ff;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.topic-info-readonly h3 {
+    color: #667eea;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+.topic-description {
+    color: #666;
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.topic-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topic-date {
+    color: #999;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.writing-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem 0;
+    border-top: 1px solid #e1e5e9;
+    margin-top: 2rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .topic-list-header,
+    .topic-list-item {
+        grid-template-columns: 80px 1fr 100px 80px;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+    
+    .topic-subject h5 {
+        font-size: 0.9rem;
+    }
+    
+    .topic-subject p {
+        font-size: 0.8rem;
+    }
+    
+    .writing-header {
+        padding: 1rem;
+    }
+    
+    .writing-content {
+        padding: 1rem;
+    }
+    
+    .topic-info-readonly {
+        padding: 1rem;
+    }
+    
+    .topic-info-readonly h3 {
+        font-size: 1.1rem;
+    }
+    
+    .topic-description {
+        font-size: 1rem;
+    }
+}

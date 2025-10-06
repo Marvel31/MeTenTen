@@ -22,13 +22,16 @@
     <div class="month-filter">
         <div class="filter-section">
             <label for="monthSelect">월 선택:</label>
-            <select id="monthSelect" @bind="selectedMonth" class="form-control">
+            <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control">
                 @for (int i = 0; i < 12; i++)
                 {
                     var month = DateTime.Now.AddMonths(-i);
                     <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
                 }
             </select>
+        </div>
+        <div class="selected-month-display">
+            <h3>📅 @GetSelectedMonthDisplay()</h3>
         </div>
         <div class="filter-actions">
             <button class="btn btn-primary" @onclick="ShowNewTopicModal">
@@ -48,30 +51,37 @@
     else if (filteredTopics.Any())
     {
         <div class="topics-list">
-            <h3>@selectedMonth.ToString("yyyy년 MM월") 주제 목록</h3>
-            <div class="topics-grid">
+            <h3>📋 주제 목록</h3>
+            <div class="topics-table">
+                <div class="topic-list-header">
+                    <div class="header-date">날짜</div>
+                    <div class="header-subject">주제</div>
+                    <div class="header-status">상태</div>
+                    <div class="header-actions">작업</div>
+                </div>
                 @foreach (var topic in filteredTopics.OrderByDescending(t => t.CreatedAt))
                 {
-                    <div class="topic-card" @onclick="() => SelectTopic(topic)">
-                        <div class="topic-header">
-                            <div class="topic-date">@topic.CreatedAt.ToString("MM-dd")</div>
-                            <div class="topic-status">
-                                @if (HasTenTenForTopic(topic.Id))
-                                {
-                                    <span class="status-badge completed">완료</span>
-                                }
-                                else
-                                {
-                                    <span class="status-badge pending">미작성</span>
-                                }
-                            </div>
+                    <div class="topic-list-item" @onclick="() => SelectTopic(topic)">
+                        <div class="topic-date">@topic.CreatedAt.ToString("MM-dd")</div>
+                        <div class="topic-subject">
+                            <h5>@topic.Subject</h5>
+                            @if (!string.IsNullOrEmpty(topic.Description))
+                            {
+                                <p>@topic.Description</p>
+                            }
                         </div>
-                        <div class="topic-content">
-                            <h4>@topic.Subject</h4>
-                            <p>@topic.Description</p>
+                        <div class="topic-status">
+                            @if (HasTenTenForTopic(topic.Id))
+                            {
+                                <span class="status-badge completed">작성완료</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge pending">미작성</span>
+                            }
                         </div>
                         <div class="topic-actions">
-                            <button class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => SelectTopic(topic)">
+                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => SelectTopic(topic)">
                                 @if (HasTenTenForTopic(topic.Id))
                                 {
                                     <span class="bi bi-eye"></span> @("보기")
@@ -139,22 +149,37 @@
     </div>
 }
 
-<!-- 10&10 작성/보기 모달 -->
+<!-- 10&10 작성/보기 전체 화면 -->
 @if (showTenTenModal)
 {
-    <div class="modal-overlay" @onclick="CloseTenTenModal">
-        <div class="modal-content ten-ten-modal" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>@(isEditing ? "10&10 수정" : "10&10 작성")</h3>
-                <button class="btn-close" @onclick="CloseTenTenModal">&times;</button>
+    <div class="fullscreen-writing-container">
+        <div class="writing-header">
+            <div class="header-left">
+                <button class="btn btn-outline-secondary" @onclick="CloseTenTenModal">
+                    <span class="bi bi-arrow-left"></span> 뒤로가기
+                </button>
             </div>
-            <div class="modal-body">
+            <div class="header-center">
+                <h2>@(isEditing ? "10&10 수정" : "10&10 작성")</h2>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-outline-danger" @onclick="CloseTenTenModal">
+                    <span class="bi bi-x"></span> 닫기
+                </button>
+            </div>
+        </div>
+        <div class="writing-content">
                 @if (selectedTopic != null)
                 {
-                    <div class="topic-info">
-                        <h4>@selectedTopic.Subject</h4>
-                        <p>@selectedTopic.Description</p>
-                        <small class="text-muted">작성일: @selectedTopic.CreatedAt.ToString("yyyy-MM-dd")</small>
+                    <div class="topic-info-readonly">
+                        <h3>📝 주제: @selectedTopic.Subject</h3>
+                        @if (!string.IsNullOrEmpty(selectedTopic.Description))
+                        {
+                            <p class="topic-description">@selectedTopic.Description</p>
+                        }
+                        <div class="topic-meta">
+                            <span class="topic-date">📅 @selectedTopic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
+                        </div>
                     </div>
 
                     <EditForm Model="currentTenTen" OnValidSubmit="SaveTenTen">
@@ -204,25 +229,13 @@
                             <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
                         </div>
 
-                        <div class="form-group">
-                            <label for="emotionTag">감정 태그</label>
-                            <InputText id="emotionTag" @bind-Value="currentTenTen.EmotionTag" 
-                                     class="form-control" placeholder="예: 행복, 감사, 걱정 등" />
-                        </div>
 
-                        <div class="form-group">
-                            <label for="importanceLevel">중요도 (1-5)</label>
-                            <InputNumber id="importanceLevel" @bind-Value="currentTenTen.ImportanceLevel" 
-                                       class="form-control" min="1" max="5" />
-                        </div>
-
-                        <div class="modal-footer">
+                        <div class="writing-footer">
                             <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">취소</button>
-                            <button type="submit" class="btn btn-primary">저장</button>
+                            <button type="submit" class="btn btn-primary btn-lg">저장</button>
                         </div>
                     </EditForm>
                 }
-            </div>
         </div>
     </div>
 }
@@ -274,6 +287,7 @@
     private void OnMonthChanged()
     {
         FilterTopicsByMonth();
+        StateHasChanged();
     }
 
     private void FilterTopicsByMonth()
@@ -462,6 +476,16 @@
             baseClass += " writing-mode";
         }
         return baseClass;
+    }
+
+
+    private string GetSelectedMonthDisplay()
+    {
+        if (DateTime.TryParse(selectedMonth.ToString("yyyy-MM-01"), out DateTime monthDate))
+        {
+            return monthDate.ToString("yyyy년 MM월");
+        }
+        return selectedMonth.ToString("yyyy년 MM월");
     }
 
     public void Dispose()
