@@ -22,7 +22,6 @@
     <div class="month-filter-compact">
         <div class="filter-row">
             <div class="filter-item">
-                <label for="monthSelect">월 선택:</label>
                 <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control form-control-sm">
                     @for (int i = 0; i < 12; i++)
                     {
@@ -30,9 +29,6 @@
                         <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
                     }
                 </select>
-            </div>
-            <div class="filter-item">
-                <span class="selected-month-text">📅 @GetSelectedMonthDisplay()</span>
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
@@ -55,13 +51,6 @@
         <div class="topics-list">
             <h3>📋 주제 목록</h3>
             <div class="topics-table">
-                <div class="topic-list-header">
-                    <div class="header-date">날짜</div>
-                    <div class="header-subject">주제</div>
-                    <div class="header-status">상태</div>
-                    <div class="header-actions">작업</div>
-                    <div class="header-actions">관리</div>
-                </div>
                 @foreach (var topic in filteredTopics.OrderByDescending(t => t.CreatedAt))
                 {
                     <div class="topic-list-item" @onclick="() => SelectTopic(topic)">
@@ -94,12 +83,10 @@
                                     <span class="bi bi-pencil"></span> @("작성")
                                 }
                             </button>
-                        </div>
-                        <div class="topic-actions">
-                            <button class="btn btn-sm btn-outline-warning" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
+                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
                                 <span class="bi bi-pencil-square"></span> 수정
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
+                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
                                 <span class="bi bi-trash"></span> 삭제
                             </button>
                         </div>
