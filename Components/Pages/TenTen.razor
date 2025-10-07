@@ -22,6 +22,7 @@
     <div class="month-filter-compact">
         <div class="filter-row">
             <div class="filter-item">
+                <label for="monthSelect">월 선택:</label>
                 <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control form-control-sm">
                     @for (int i = 0; i < 12; i++)
                     {
@@ -29,6 +30,9 @@
                         <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
                     }
                 </select>
+            </div>
+            <div class="filter-item">
+                <span class="selected-month-display">📅 @GetSelectedMonthDisplay()</span>
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">

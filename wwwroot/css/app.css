@@ -1812,6 +1812,160 @@ h1:focus {
     }
 }
 
+/* 10&10 주제 목록 카드 디자인 */
+.topic-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.topic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.topic-card-content {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+.topic-date-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 120px;
+}
+
+.date-pill {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.day-text {
+    color: #333;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.topic-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.topic-question {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.topic-creation-date {
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.topic-status-badge {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.status-badge.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.topic-actions-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    min-width: 120px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: 2px solid;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.write-btn {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.write-btn:hover {
+    background: #28a745;
+    color: white;
+}
+
+.edit-btn {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.edit-btn:hover {
+    background: #007bff;
+    color: white;
+}
+
+.delete-btn {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
 /* 10&10 화면 추가 개선 스타일 */
 
 /* 컴팩트한 월선택 패널 */
@@ -1844,7 +1998,7 @@ h1:focus {
     white-space: nowrap;
 }
 
-.selected-month-text {
+.selected-month-display {
     color: #667eea;
     font-weight: 600;
     font-size: 1rem;
@@ -1852,6 +2006,7 @@ h1:focus {
     background: #f8f9ff;
     border-radius: 6px;
     border: 1px solid #e1e5e9;
+    white-space: nowrap;
 }
 
 /* 주제 리스트 테이블 개선 */
@@ -1947,5 +2102,42 @@ h1:focus {
     .content-text {
         padding: 1rem;
         min-height: 150px;
+    }
+    
+    /* 주제 카드 반응형 디자인 */
+    .topic-card-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .topic-date-section {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        min-width: auto;
+    }
+    
+    .topic-main-content {
+        order: 2;
+    }
+    
+    .topic-actions-section {
+        order: 3;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        min-width: auto;
+    }
+    
+    .action-buttons {
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
     }
 }

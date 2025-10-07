@@ -3,6 +3,7 @@
 @using MeTenTenMaui.Services
 @inject ITopicService TopicService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>주제 관리 - MeTenTen</PageTitle>
 
@@ -28,17 +29,47 @@
         <div class="topics-list">
             @foreach (var topic in topics.OrderByDescending(t => t.TopicDate))
             {
-                <div class="topic-list-item" @onclick="() => NavigateToTenTen(topic.Id)">
-                    <div class="topic-info">
-                        <div class="topic-subject">
-                            <h4>@topic.Subject</h4>
-                            <small>@topic.TopicDate.ToString("yyyy년 MM월 dd일")</small>
+                <div class="topic-card" @onclick="() => NavigateToTenTen(topic.Id)">
+                    <div class="topic-card-content">
+                        <div class="topic-date-section">
+                            <div class="date-pill">@topic.TopicDate.ToString("yyyy-MM-dd")</div>
+                            <div class="day-text">@GetDayOfWeek(topic.TopicDate)</div>
                         </div>
-                    </div>
-                    <div class="topic-status">
-                        <span class="status-badge status-empty">
-                            <span class="bi bi-pencil"></span> 작성하기
-                        </span>
+                        
+                        <div class="topic-main-content">
+                            <div class="topic-question">
+                                @topic.Subject
+                            </div>
+                            <div class="topic-creation-date">
+                                생성일: @topic.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                            </div>
+                            <div class="topic-status-badge">
+                                <span class="status-badge status-pending">미작성</span>
+                            </div>
+                        </div>
+                        
+                        <div class="topic-actions-section">
+                            <div class="action-buttons">
+                                <button class="action-btn write-btn" 
+                                        @onclick="() => NavigateToTenTen(topic.Id)" 
+                                        @onclick:stopPropagation="true"
+                                        title="10&10 작성하기">
+                                    <span class="bi bi-pencil"></span>
+                                </button>
+                                <button class="action-btn edit-btn" 
+                                        @onclick="() => EditTopic(topic)" 
+                                        @onclick:stopPropagation="true"
+                                        title="주제 수정">
+                                    <span class="bi bi-pencil-square"></span>
+                                </button>
+                                <button class="action-btn delete-btn" 
+                                        @onclick="() => DeleteTopic(topic.Id)" 
+                                        @onclick:stopPropagation="true"
+                                        title="주제 삭제">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             }
@@ -77,17 +108,35 @@
                         <ValidationMessage For="@(() => currentTopic.Subject)" class="text-danger" />
                     </div>
 
-                    <div class="form-group">
-                        <label for="description">설명</label>
-                        <InputTextArea id="description" @bind-Value="currentTopic.Description" 
-                                     class="form-control" rows="3" placeholder="주제에 대한 설명을 입력해주세요" />
-                        <ValidationMessage For="@(() => currentTopic.Description)" class="text-danger" />
-                    </div>
 
                     <div class="form-group">
                         <label for="topicDate">주제 날짜 *</label>
-                        <InputDate id="topicDate" @bind-Value="currentTopic.TopicDate" 
-                                 class="form-control" />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select class="form-control" @bind="selectedYear" @bind:after="OnDateChanged">
+                                    @for (int year = DateTime.Now.Year - 1; year <= DateTime.Now.Year + 1; year++)
+                                    {
+                                        <option value="@year">@year 년</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" @bind="selectedMonth" @bind:after="OnDateChanged">
+                                    @for (int month = 1; month <= 12; month++)
+                                    {
+                                        <option value="@month">@month 월</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" @bind="selectedDay" @bind:after="OnDateChanged">
+                                    @for (int day = 1; day <= DateTime.DaysInMonth(selectedYear, selectedMonth); day++)
+                                    {
+                                        <option value="@day">@day 일</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
                         <ValidationMessage For="@(() => currentTopic.TopicDate)" class="text-danger" />
                     </div>
 
@@ -123,6 +172,11 @@
     private string errorMessage = string.Empty;
     private CreateTopicRequest currentTopic = new();
     private int? editingTopicId = null;
+    
+    // 날짜 선택을 위한 변수들
+    private int selectedYear = DateTime.Now.Year;
+    private int selectedMonth = DateTime.Now.Month;
+    private int selectedDay = DateTime.Now.Day;
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,12 +205,20 @@
     {
         isEditing = false;
         editingTopicId = null;
+        
+        // 현재 날짜로 초기화
+        var today = DateTime.Today;
+        selectedYear = today.Year;
+        selectedMonth = today.Month;
+        selectedDay = today.Day;
+        
         currentTopic = new CreateTopicRequest
         {
-            TopicDate = DateTime.Today
+            TopicDate = today
         };
         errorMessage = string.Empty;
         showModal = true;
+        StateHasChanged();
     }
 
     private void CloseModal()
@@ -209,5 +271,93 @@
     private void NavigateToTenTen(int topicId)
     {
         NavigationManager.NavigateTo($"/tenten?topicId={topicId}");
+    }
+
+    private string GetDayOfWeek(DateTime date)
+    {
+        return date.DayOfWeek switch
+        {
+            DayOfWeek.Sunday => "일요일",
+            DayOfWeek.Monday => "월요일",
+            DayOfWeek.Tuesday => "화요일",
+            DayOfWeek.Wednesday => "수요일",
+            DayOfWeek.Thursday => "목요일",
+            DayOfWeek.Friday => "금요일",
+            DayOfWeek.Saturday => "토요일",
+            _ => ""
+        };
+    }
+
+    private void EditTopic(Topic topic)
+    {
+        isEditing = true;
+        editingTopicId = topic.Id;
+        
+        // 기존 날짜로 초기화
+        selectedYear = topic.TopicDate.Year;
+        selectedMonth = topic.TopicDate.Month;
+        selectedDay = topic.TopicDate.Day;
+        
+        currentTopic = new CreateTopicRequest
+        {
+            Subject = topic.Subject,
+            Description = topic.Description,
+            TopicDate = topic.TopicDate
+        };
+        errorMessage = string.Empty;
+        showModal = true;
+        StateHasChanged();
+    }
+
+    private async Task DeleteTopic(int topicId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "정말로 이 주제를 삭제하시겠습니까?"))
+        {
+            try
+            {
+                var result = await TopicService.DeleteTopicAsync(topicId);
+                if (result)
+                {
+                    // 삭제 성공 시 목록에서 해당 항목 제거
+                    topics.RemoveAll(t => t.Id == topicId);
+                    StateHasChanged();
+                }
+                else
+                {
+                    errorMessage = "주제를 찾을 수 없습니다.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"주제 삭제 중 오류가 발생했습니다: {ex.Message}";
+            }
+        }
+    }
+
+    private void OnDateChanged()
+    {
+        try
+        {
+            // 선택된 날짜가 유효한지 확인
+            var daysInMonth = DateTime.DaysInMonth(selectedYear, selectedMonth);
+            if (selectedDay > daysInMonth)
+            {
+                selectedDay = daysInMonth;
+            }
+            
+            // currentTopic의 TopicDate 업데이트
+            currentTopic.TopicDate = new DateTime(selectedYear, selectedMonth, selectedDay);
+        }
+        catch
+        {
+            // 잘못된 날짜인 경우 오늘 날짜로 설정
+            var today = DateTime.Today;
+            selectedYear = today.Year;
+            selectedMonth = today.Month;
+            selectedDay = today.Day;
+            currentTopic.TopicDate = today;
+        }
+        
+        StateHasChanged();
     }
 }
