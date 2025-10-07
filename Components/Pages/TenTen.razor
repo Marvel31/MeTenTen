@@ -229,7 +229,7 @@
                         </div>
                     </div>
 
-                    @if (HasTenTenForTopic(selectedTopic.Id))
+                    @if (HasTenTenForTopic(selectedTopic.Id) && !isEditing)
                     {
                         <!-- 읽기 모드 -->
                         <div class="read-mode-content">
@@ -484,6 +484,7 @@
         showTenTenModal = false;
         selectedTopic = null;
         currentTenTen = new();
+        isEditing = false;
         StopTimer();
     }
 
