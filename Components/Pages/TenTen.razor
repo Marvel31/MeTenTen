@@ -58,41 +58,41 @@
                 @foreach (var topic in filteredTopics.OrderByDescending(t => t.CreatedAt))
                 {
                     <div class="topic-list-item" @onclick="() => SelectTopic(topic)">
-                        <div class="topic-date">@topic.CreatedAt.ToString("MM-dd")</div>
-                        <div class="topic-subject">
-                            <h5>@topic.Subject</h5>
-                            @if (!string.IsNullOrEmpty(topic.Description))
-                            {
-                                <p>@topic.Description</p>
-                            }
-                        </div>
-                        <div class="topic-status">
-                            @if (HasTenTenForTopic(topic.Id))
-                            {
-                                <span class="status-badge completed">작성완료</span>
-                            }
-                            else
-                            {
-                                <span class="status-badge pending">미작성</span>
-                            }
-                        </div>
-                        <div class="topic-actions">
-                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => SelectTopic(topic)">
-                                @if (HasTenTenForTopic(topic.Id))
-                                {
-                                    <span class="bi bi-eye"></span> @("보기")
-                                }
-                                else
-                                {
-                                    <span class="bi bi-pencil"></span> @("작성")
-                                }
-                            </button>
-                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
-                                <span class="bi bi-pencil-square"></span> 수정
-                            </button>
-                            <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
-                                <span class="bi bi-trash"></span> 삭제
-                            </button>
+                        <div class="topic-content">
+                            <div class="topic-subject-line">
+                                <h5>@topic.Subject</h5>
+                            </div>
+                            <div class="topic-meta-line">
+                                <div class="topic-date-status">
+                                    <span class="topic-date">@topic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
+                                    @if (HasTenTenForTopic(topic.Id))
+                                    {
+                                        <span class="status-badge completed">작성완료</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge pending">미작성</span>
+                                    }
+                                </div>
+                                <div class="topic-actions">
+                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => SelectTopic(topic)">
+                                        @if (HasTenTenForTopic(topic.Id))
+                                        {
+                                            <span class="bi bi-eye"></span> @("보기")
+                                        }
+                                        else
+                                        {
+                                            <span class="bi bi-pencil"></span> @("작성")
+                                        }
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
+                                        <span class="bi bi-pencil-square"></span> 수정
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
+                                        <span class="bi bi-trash"></span> 삭제
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 }

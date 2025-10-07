@@ -2011,20 +2011,58 @@ h1:focus {
 
 /* 주제 리스트 테이블 개선 */
 .topic-list-item {
-    display: grid;
-    grid-template-columns: 100px 1fr 120px 1fr;
-    gap: 1rem;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #f1f3f4;
     cursor: pointer;
     transition: background-color 0.2s ease;
+}
+
+.topic-list-item:hover {
+    background-color: #f8f9fa;
+}
+
+.topic-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.topic-subject-line {
+    display: flex;
     align-items: center;
+}
+
+.topic-subject-line h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.4;
+}
+
+.topic-meta-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topic-date-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topic-date {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .topic-actions {
     display: flex;
     gap: 0.5rem;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
 }
 
@@ -2079,12 +2117,21 @@ h1:focus {
     }
     
     .topic-list-item {
-        grid-template-columns: 80px 1fr 100px 1fr;
-        gap: 0.5rem;
         padding: 0.75rem 1rem;
     }
     
+    .topic-meta-line {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .topic-date-status {
+        justify-content: space-between;
+    }
+    
     .topic-actions {
+        justify-content: center;
         flex-direction: column;
         gap: 0.25rem;
     }
