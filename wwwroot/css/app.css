@@ -1798,3 +1798,139 @@ h1:focus {
         font-size: 1rem;
     }
 }
+
+/* 10&10 화면 추가 개선 스타일 */
+
+/* 컴팩트한 월선택 패널 */
+.month-filter-compact {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-item label {
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.selected-month-text {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.25rem 0.75rem;
+    background: #f8f9ff;
+    border-radius: 6px;
+    border: 1px solid #e1e5e9;
+}
+
+/* 주제 리스트 테이블 개선 */
+.topic-list-header {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 100px 120px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    font-weight: 600;
+    color: #333;
+}
+
+.topic-list-item {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 100px 120px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    align-items: center;
+}
+
+.topic-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* 읽기 모드 스타일 */
+.read-mode-content {
+    padding: 1rem 0;
+}
+
+.content-display {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e1e5e9;
+}
+
+.content-display h4 {
+    color: #333;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.content-text {
+    background: white;
+    border-radius: 6px;
+    padding: 1.5rem;
+    border: 1px solid #e1e5e9;
+    line-height: 1.6;
+    color: #333;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    min-height: 200px;
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .filter-item {
+        justify-content: space-between;
+    }
+    
+    .topic-list-header,
+    .topic-list-item {
+        grid-template-columns: 80px 1fr 100px 80px 100px;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+    
+    .topic-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .content-display {
+        padding: 1rem;
+    }
+    
+    .content-text {
+        padding: 1rem;
+        min-height: 150px;
+    }
+}

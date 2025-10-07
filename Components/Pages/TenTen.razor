@@ -19,24 +19,26 @@
     </div>
 
     <!-- 월별 필터링 -->
-    <div class="month-filter">
-        <div class="filter-section">
-            <label for="monthSelect">월 선택:</label>
-            <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control">
-                @for (int i = 0; i < 12; i++)
-                {
-                    var month = DateTime.Now.AddMonths(-i);
-                    <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
-                }
-            </select>
-        </div>
-        <div class="selected-month-display">
-            <h3>📅 @GetSelectedMonthDisplay()</h3>
-        </div>
-        <div class="filter-actions">
-            <button class="btn btn-primary" @onclick="ShowNewTopicModal">
-                <span class="bi bi-plus-circle"></span> 새 주제 추가
-            </button>
+    <div class="month-filter-compact">
+        <div class="filter-row">
+            <div class="filter-item">
+                <label for="monthSelect">월 선택:</label>
+                <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control form-control-sm">
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        var month = DateTime.Now.AddMonths(-i);
+                        <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-item">
+                <span class="selected-month-text">📅 @GetSelectedMonthDisplay()</span>
+            </div>
+            <div class="filter-item">
+                <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
+                    <span class="bi bi-plus-circle"></span> 새 주제 추가
+                </button>
+            </div>
         </div>
     </div>
 
@@ -58,6 +60,7 @@
                     <div class="header-subject">주제</div>
                     <div class="header-status">상태</div>
                     <div class="header-actions">작업</div>
+                    <div class="header-actions">관리</div>
                 </div>
                 @foreach (var topic in filteredTopics.OrderByDescending(t => t.CreatedAt))
                 {
@@ -90,6 +93,14 @@
                                 {
                                     <span class="bi bi-pencil"></span> @("작성")
                                 }
+                            </button>
+                        </div>
+                        <div class="topic-actions">
+                            <button class="btn btn-sm btn-outline-warning" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
+                                <span class="bi bi-pencil-square"></span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => DeleteTopic(topic)">
+                                <span class="bi bi-trash"></span>
                             </button>
                         </div>
                     </div>
@@ -149,6 +160,48 @@
     </div>
 }
 
+<!-- 주제 수정 모달 -->
+@if (showEditTopicModal)
+{
+    <div class="modal-overlay" @onclick="CloseEditTopicModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>주제 수정</h3>
+                <button class="btn-close" @onclick="CloseEditTopicModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="editTopic" OnValidSubmit="SaveEditTopic">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group">
+                        <label for="editTopicDate">날짜 *</label>
+                        <InputDate id="editTopicDate" @bind-Value="editTopic.TopicDate" class="form-control" />
+                        <ValidationMessage For="@(() => editTopic.TopicDate)" class="text-danger" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTopicSubject">주제 *</label>
+                        <InputText id="editTopicSubject" @bind-Value="editTopic.Subject" 
+                                 class="form-control" placeholder="주제를 입력하세요" />
+                        <ValidationMessage For="@(() => editTopic.Subject)" class="text-danger" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTopicDescription">설명</label>
+                        <InputTextArea id="editTopicDescription" @bind-Value="editTopic.Description" 
+                                     class="form-control" rows="3" placeholder="주제에 대한 설명을 입력하세요" />
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseEditTopicModal">취소</button>
+                        <button type="submit" class="btn btn-primary">수정</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
 <!-- 10&10 작성/보기 전체 화면 -->
 @if (showTenTenModal)
 {
@@ -182,59 +235,80 @@
                         </div>
                     </div>
 
-                    <EditForm Model="currentTenTen" OnValidSubmit="SaveTenTen">
-                        <DataAnnotationsValidator />
-                        
-                        <div class="form-group">
-                            <label for="content">10&10 내용 *</label>
-                            <div class="timer-container">
-                                <div class="timer-display">
-                                    <span class="timer-label">작성 시간:</span>
-                                    <span class="timer-value @(isTimerRunning ? "running" : "")">@FormatTime(remainingTime)</span>
-                                    @if (isTimerRunning)
-                                    {
-                                        <span class="timer-status">⏱️ 작성 중...</span>
-                                    }
-                                    else if (remainingTime == 0)
-                                    {
-                                        <span class="timer-status">✅ 시간 완료!</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="timer-status">⏸️ 대기 중</span>
-                                    }
-                                </div>
-                                <div class="timer-controls">
-                                    @if (!isTimerRunning && remainingTime > 0)
-                                    {
-                                        <button type="button" class="btn btn-success btn-sm" @onclick="StartTimer">
-                                            <span class="bi bi-play"></span> 시작
-                                        </button>
-                                    }
-                                    else if (isTimerRunning)
-                                    {
-                                        <button type="button" class="btn btn-warning btn-sm" @onclick="PauseTimer">
-                                            <span class="bi bi-pause"></span> 일시정지
-                                        </button>
-                                    }
-                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="ResetTimer">
-                                        <span class="bi bi-arrow-clockwise"></span> 리셋
-                                    </button>
+                    @if (HasTenTenForTopic(selectedTopic.Id))
+                    {
+                        <!-- 읽기 모드 -->
+                        <div class="read-mode-content">
+                            <div class="content-display">
+                                <h4>📝 작성된 내용</h4>
+                                <div class="content-text">
+                                    @currentTenTen.Content
                                 </div>
                             </div>
-                            <InputTextArea id="content" @bind-Value="currentTenTen.Content"
-                                        class="@GetTextAreaClass()" rows="20"
-                                        placeholder="10분간 마음을 적어보세요..." />
-                            <ValidationMessage For="@(() => currentTenTen.Content)" class="text-danger" />
-                            <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
+                            <div class="writing-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">닫기</button>
+                                <button type="button" class="btn btn-warning" @onclick="() => EnableEditMode()">
+                                    <span class="bi bi-pencil"></span> 수정
+                                </button>
+                            </div>
                         </div>
+                    }
+                    else
+                    {
+                        <!-- 작성 모드 -->
+                        <EditForm Model="currentTenTen" OnValidSubmit="SaveTenTen">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="form-group">
+                                <label for="content">10&10 내용 *</label>
+                                <div class="timer-container">
+                                    <div class="timer-display">
+                                        <span class="timer-label">작성 시간:</span>
+                                        <span class="timer-value @(isTimerRunning ? "running" : "")">@FormatTime(remainingTime)</span>
+                                        @if (isTimerRunning)
+                                        {
+                                            <span class="timer-status">⏱️ 작성 중...</span>
+                                        }
+                                        else if (remainingTime == 0)
+                                        {
+                                            <span class="timer-status">✅ 시간 완료!</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="timer-status">⏸️ 대기 중</span>
+                                        }
+                                    </div>
+                                    <div class="timer-controls">
+                                        @if (!isTimerRunning && remainingTime > 0)
+                                        {
+                                            <button type="button" class="btn btn-success btn-sm" @onclick="StartTimer">
+                                                <span class="bi bi-play"></span> 시작
+                                            </button>
+                                        }
+                                        else if (isTimerRunning)
+                                        {
+                                            <button type="button" class="btn btn-warning btn-sm" @onclick="PauseTimer">
+                                                <span class="bi bi-pause"></span> 일시정지
+                                            </button>
+                                        }
+                                        <button type="button" class="btn btn-secondary btn-sm" @onclick="ResetTimer">
+                                            <span class="bi bi-arrow-clockwise"></span> 리셋
+                                        </button>
+                                    </div>
+                                </div>
+                                <InputTextArea id="content" @bind-Value="currentTenTen.Content"
+                                            class="@GetTextAreaClass()" rows="20"
+                                            placeholder="10분간 마음을 적어보세요..." />
+                                <ValidationMessage For="@(() => currentTenTen.Content)" class="text-danger" />
+                                <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
+                            </div>
 
-
-                        <div class="writing-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">취소</button>
-                            <button type="submit" class="btn btn-primary btn-lg">저장</button>
-                        </div>
-                    </EditForm>
+                            <div class="writing-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">취소</button>
+                                <button type="submit" class="btn btn-primary btn-lg">저장</button>
+                            </div>
+                        </EditForm>
+                    }
                 }
         </div>
     </div>
@@ -247,11 +321,13 @@
     private DateTime selectedMonth = DateTime.Now;
     private bool isLoading = true;
     private bool showNewTopicModal = false;
+    private bool showEditTopicModal = false;
     private bool showTenTenModal = false;
     private bool isEditing = false;
     private MeTenTenMaui.Models.Topic? selectedTopic;
     private MeTenTenMaui.Models.CreateTenTenRequest currentTenTen = new();
     private MeTenTenMaui.Models.CreateTopicRequest newTopic = new();
+    private MeTenTenMaui.Models.UpdateTopicRequest editTopic = new();
 
     // 타이머 관련 변수
     private int remainingTime = 600; // 10분 = 600초
@@ -319,6 +395,53 @@
         newTopic = new();
     }
 
+    private void EditTopic(MeTenTenMaui.Models.Topic topic)
+    {
+        editTopic = new MeTenTenMaui.Models.UpdateTopicRequest
+        {
+            Id = topic.Id,
+            Subject = topic.Subject,
+            Description = topic.Description,
+            TopicDate = topic.TopicDate
+        };
+        showEditTopicModal = true;
+    }
+
+    private void CloseEditTopicModal()
+    {
+        showEditTopicModal = false;
+        editTopic = new();
+    }
+
+    private async Task SaveEditTopic()
+    {
+        try
+        {
+            await TopicService.UpdateTopicAsync(editTopic.Id, editTopic);
+            await LoadData();
+            FilterTopicsByMonth();
+            CloseEditTopicModal();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
+    private async Task DeleteTopic(MeTenTenMaui.Models.Topic topic)
+    {
+        try
+        {
+            await TopicService.DeleteTopicAsync(topic.Id);
+            await LoadData();
+            FilterTopicsByMonth();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+    }
+
     private async Task SaveNewTopic()
     {
         try
@@ -341,14 +464,12 @@
         
         if (existingTenTen != null)
         {
-            // 기존 10&10이 있으면 수정 모드
-            isEditing = true;
+            // 기존 10&10이 있으면 읽기 모드
+            isEditing = false;
             currentTenTen = new MeTenTenMaui.Models.CreateTenTenRequest
             {
                 Content = existingTenTen.Content,
-                TopicId = existingTenTen.TopicId,
-                EmotionTag = existingTenTen.EmotionTag,
-                ImportanceLevel = existingTenTen.ImportanceLevel
+                TopicId = existingTenTen.TopicId
             };
         }
         else
@@ -370,6 +491,12 @@
         selectedTopic = null;
         currentTenTen = new();
         StopTimer();
+    }
+
+    private void EnableEditMode()
+    {
+        isEditing = true;
+        StateHasChanged();
     }
 
     private async Task SaveTenTen()

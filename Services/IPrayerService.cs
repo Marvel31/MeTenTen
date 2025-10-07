@@ -14,3 +14,4 @@ namespace MeTenTenMaui.Services
         Task ToggleFavoriteAsync(int id);
     }
 }
+

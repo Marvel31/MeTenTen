@@ -12,3 +12,4 @@ namespace MeTenTenMaui.Services
         Task<List<Feeling>> GetFeelingsByDateRangeAsync(DateTime startDate, DateTime endDate);
     }
 }
+

@@ -4,6 +4,8 @@ namespace MeTenTenMaui.Models
 {
     public class UpdateTopicRequest
     {
+        public int Id { get; set; }
+        
         [Required(ErrorMessage = "주제를 입력해주세요.")]
         [MaxLength(200, ErrorMessage = "주제는 최대 200자까지 입력 가능합니다.")]
         public string Subject { get; set; } = string.Empty;

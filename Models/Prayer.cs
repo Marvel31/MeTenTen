@@ -22,3 +22,4 @@ namespace MeTenTenMaui.Models
         public int ViewCount { get; set; }
     }
 }
+
