@@ -1606,83 +1606,8 @@ h1:focus {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     border: 1px solid #e1e5e9;
     overflow: hidden;
-    width: 100%;
 }
 
-.topic-list-header {
-    display: grid;
-    grid-template-columns: 100px 1fr 120px 100px;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e1e5e9;
-    font-weight: 600;
-    color: #333;
-}
-
-.topic-list-item {
-    display: grid;
-    grid-template-columns: 100px 1fr 120px 100px;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #f1f3f4;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    align-items: center;
-}
-
-.topic-list-item:hover {
-    background: #f8f9ff;
-}
-
-.topic-list-item:last-child {
-    border-bottom: none;
-}
-
-.topic-date {
-    color: #666;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.topic-subject h5 {
-    margin: 0 0 0.25rem 0;
-    color: #333;
-    font-weight: 600;
-}
-
-.topic-subject p {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.topic-status {
-    text-align: center;
-}
-
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.status-badge.completed {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-badge.pending {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.topic-actions {
-    text-align: center;
-}
 
 /* 전체 화면 작성 화면 */
 .fullscreen-writing-container {
@@ -2036,23 +1961,21 @@ h1:focus {
     display: flex;
     align-items: center;
     width: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 .topic-subject-line h5 {
     margin: 0;
-    padding: 0;
     font-size: 1.1rem;
     font-weight: 600;
     color: #333;
     line-height: 1.4;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    max-width: none;
-    flex: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .topic-meta-line {
