@@ -97,10 +97,10 @@
                         </div>
                         <div class="topic-actions">
                             <button class="btn btn-sm btn-outline-warning" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
-                                <span class="bi bi-pencil-square"></span>
+                                <span class="bi bi-pencil-square"></span> 수정
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => DeleteTopic(topic)">
-                                <span class="bi bi-trash"></span>
+                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
+                                <span class="bi bi-trash"></span> 삭제
                             </button>
                         </div>
                     </div>
@@ -191,6 +191,32 @@
                         <button type="submit" class="btn btn-primary">수정</button>
                     </div>
                 </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 삭제 확인 모달 -->
+@if (showDeleteConfirmationModal)
+{
+    <div class="modal-overlay" @onclick="CloseDeleteConfirmationModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>주제 삭제 확인</h3>
+                <button class="btn-close" @onclick="CloseDeleteConfirmationModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>⚠️ 주의:</strong> 이 주제와 관련된 모든 10&10 내용이 함께 삭제됩니다.
+                </div>
+                <p>정말로 "<strong>@topicToDelete?.Subject</strong>" 주제를 삭제하시겠습니까?</p>
+                <p class="text-muted">이 작업은 되돌릴 수 없습니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseDeleteConfirmationModal">취소</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmDeleteTopic">
+                    <span class="bi bi-trash"></span> 삭제
+                </button>
             </div>
         </div>
     </div>
@@ -316,9 +342,11 @@
     private bool isLoading = true;
     private bool showNewTopicModal = false;
     private bool showEditTopicModal = false;
+    private bool showDeleteConfirmationModal = false;
     private bool showTenTenModal = false;
     private bool isEditing = false;
     private MeTenTenMaui.Models.Topic? selectedTopic;
+    private MeTenTenMaui.Models.Topic? topicToDelete;
     private MeTenTenMaui.Models.CreateTenTenRequest currentTenTen = new();
     private MeTenTenMaui.Models.CreateTopicRequest newTopic = new();
     private MeTenTenMaui.Models.UpdateTopicRequest editTopic = new();
@@ -422,17 +450,33 @@
         }
     }
 
-    private async Task DeleteTopic(MeTenTenMaui.Models.Topic topic)
+    private void ShowDeleteConfirmation(MeTenTenMaui.Models.Topic topic)
     {
-        try
+        topicToDelete = topic;
+        showDeleteConfirmationModal = true;
+    }
+
+    private void CloseDeleteConfirmationModal()
+    {
+        showDeleteConfirmationModal = false;
+        topicToDelete = null;
+    }
+
+    private async Task ConfirmDeleteTopic()
+    {
+        if (topicToDelete != null)
         {
-            await TopicService.DeleteTopicAsync(topic.Id);
-            await LoadData();
-            FilterTopicsByMonth();
-        }
-        catch (Exception ex)
-        {
-            // 에러 처리
+            try
+            {
+                await TopicService.DeleteTopicAsync(topicToDelete.Id);
+                await LoadData();
+                FilterTopicsByMonth();
+                CloseDeleteConfirmationModal();
+            }
+            catch (Exception ex)
+            {
+                // 에러 처리
+            }
         }
     }
 
