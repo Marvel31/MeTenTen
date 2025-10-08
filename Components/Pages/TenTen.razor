@@ -56,7 +56,7 @@
         <div class="topics-list">
             <h3>📋 주제 목록</h3>
             <div class="topics-table">
-                @foreach (var topic in filteredTopics.OrderByDescending(t => t.CreatedAt))
+                @foreach (var topic in filteredTopics.OrderByDescending(t => t.TopicDate))
                 {
                     <div class="topic-list-item" @onclick="() => SelectTopic(topic)">
                         <div class="topic-content">
@@ -65,7 +65,7 @@
                             </div>
                             <div class="topic-meta-line">
                                 <div class="topic-date-status">
-                                    <span class="topic-date">@topic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
+                                    <span class="topic-date">@topic.TopicDate.ToString("yyyy년 MM월 dd일")</span>
                                     @if (HasTenTenForTopic(topic.Id))
                                     {
                                         <span class="status-badge completed">작성완료</span>
