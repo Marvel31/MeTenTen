@@ -22,6 +22,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITenTenService, TenTenService>();
 		builder.Services.AddSingleton<ITopicService, TopicService>();
 		builder.Services.AddSingleton<IFeelingService, FeelingService>();
+		builder.Services.AddSingleton<IFeelingExampleService, FeelingExampleService>();
 		builder.Services.AddSingleton<IPrayerService, PrayerService>();
 
 #if DEBUG

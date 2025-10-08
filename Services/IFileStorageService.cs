@@ -10,6 +10,8 @@ namespace MeTenTenMaui.Services
         Task<List<Topic>> LoadTopicsAsync();
         Task<string> ExportMonthDataAsync(int year, int month, List<TenTen> tenTens, List<Topic> topics);
         Task<(List<TenTen> tenTens, List<Topic> topics)> ImportDataAsync(string filePath);
+        Task SaveFeelingExamplesAsync(List<FeelingExample> examples);
+        Task<List<FeelingExample>> LoadFeelingExamplesAsync();
     }
 }
 

@@ -8,12 +8,14 @@ namespace MeTenTenMaui.Services
     {
         private readonly string _tenTensFilePath;
         private readonly string _topicsFilePath;
+        private readonly string _feelingExamplesFilePath;
 
         public FileStorageService()
         {
             var appDataPath = FileSystem.AppDataDirectory;
             _tenTensFilePath = Path.Combine(appDataPath, "tenten_data.txt");
             _topicsFilePath = Path.Combine(appDataPath, "topics_data.txt");
+            _feelingExamplesFilePath = Path.Combine(appDataPath, "feeling_examples.txt");
         }
 
         public async Task SaveTenTensAsync(List<TenTen> tenTens)
@@ -408,6 +410,94 @@ namespace MeTenTenMaui.Services
             }
             
             return (tenTens, topics);
+        }
+
+        public async Task SaveFeelingExamplesAsync(List<FeelingExample> examples)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("=== Feeling Examples Data ===");
+            
+            foreach (var example in examples)
+            {
+                sb.AppendLine($"ID: {example.Id}");
+                sb.AppendLine($"Category: {example.Category}");
+                sb.AppendLine($"SubCategory: {example.SubCategory}");
+                sb.AppendLine($"Description: {example.Description}");
+                sb.AppendLine($"IsDefault: {example.IsDefault}");
+                sb.AppendLine($"CreatedAt: {example.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                sb.AppendLine("---");
+            }
+
+            await File.WriteAllTextAsync(_feelingExamplesFilePath, sb.ToString(), Encoding.UTF8);
+        }
+
+        public async Task<List<FeelingExample>> LoadFeelingExamplesAsync()
+        {
+            var examples = new List<FeelingExample>();
+            
+            if (!File.Exists(_feelingExamplesFilePath))
+                return examples;
+
+            var content = await File.ReadAllTextAsync(_feelingExamplesFilePath, Encoding.UTF8);
+            var lines = content.Split('\n');
+            
+            FeelingExample? currentExample = null;
+            
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                
+                if (trimmedLine == "=== Feeling Examples Data ===")
+                    continue;
+                
+                if (trimmedLine == "---")
+                {
+                    if (currentExample != null)
+                    {
+                        examples.Add(currentExample);
+                        currentExample = null;
+                    }
+                    continue;
+                }
+                
+                if (string.IsNullOrWhiteSpace(trimmedLine))
+                    continue;
+                
+                var parts = trimmedLine.Split(new[] { ": " }, 2, StringSplitOptions.None);
+                if (parts.Length != 2)
+                    continue;
+                
+                var key = parts[0];
+                var value = parts[1];
+                
+                if (key == "ID")
+                {
+                    currentExample = new FeelingExample { Id = int.Parse(value) };
+                }
+                else if (currentExample != null)
+                {
+                    switch (key)
+                    {
+                        case "Category":
+                            currentExample.Category = value;
+                            break;
+                        case "SubCategory":
+                            currentExample.SubCategory = value;
+                            break;
+                        case "Description":
+                            currentExample.Description = value;
+                            break;
+                        case "IsDefault":
+                            currentExample.IsDefault = bool.Parse(value);
+                            break;
+                        case "CreatedAt":
+                            currentExample.CreatedAt = DateTime.ParseExact(value, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+                            break;
+                    }
+                }
+            }
+            
+            return examples;
         }
     }
 }

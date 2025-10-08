@@ -1,198 +1,269 @@
 @page "/feeling"
 @using MeTenTenMaui.Models
 @using MeTenTenMaui.Services
-@inject IFeelingService FeelingService
-@implements IDisposable
+@inject IFeelingExampleService FeelingExampleService
 
 <PageTitle>느낌 표현 - MeTenTen</PageTitle>
 
 <BreadcrumbNavigator CurrentPageTitle="느낌 표현" />
 
-<div class="feeling-container">
+<div class="feeling-examples-container">
     <div class="feeling-header">
-        <h1>😊 느낌 표현</h1>
-        <p class="feeling-subtitle">오늘의 감정과 느낌을 자유롭게 표현해보세요</p>
+        <h1>😊 느낌 표현 예시</h1>
+        <p class="feeling-subtitle">다양한 감정을 표현하는 방법을 참고해보세요</p>
     </div>
 
-    <div class="feeling-actions">
-        <button class="btn btn-primary" @onclick="ShowCreateModal">
-            <span class="bi bi-plus-circle"></span> 새 느낌 표현하기
-        </button>
-    </div>
-
-    <div class="feeling-list">
-        @if (feelings.Any())
-        {
-            <div class="feeling-cards">
-                @foreach (var feeling in feelings.OrderByDescending(f => f.CreatedAt))
-                {
-                    <div class="feeling-card">
-                        <div class="feeling-card-header">
-                            <div class="feeling-emoji">@feeling.Emoji</div>
-                            <div class="feeling-meta">
-                                <span class="feeling-date">@feeling.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
-                                <span class="feeling-mood">@feeling.Mood</span>
-                            </div>
-                        </div>
-                        <div class="feeling-content">
-                            <p>@feeling.Content</p>
-                        </div>
-                        <div class="feeling-actions">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditFeeling(feeling)">
-                                <span class="bi bi-pencil"></span> 수정
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteFeeling(feeling.Id)">
-                                <span class="bi bi-trash"></span> 삭제
-                            </button>
-                        </div>
-                    </div>
-                }
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-        }
-        else
-        {
-            <div class="empty-state">
-                <div class="empty-icon">😊</div>
-                <h3>아직 표현한 느낌이 없습니다</h3>
-                <p>첫 번째 느낌을 표현해보세요!</p>
+        </div>
+    }
+    else
+    {
+        <!-- 기쁨 섹션 -->
+        <div class="category-section">
+            <div class="category-header" @onclick="@(() => ToggleCategory(CategoryJoy))">
+                <h2>😊 기쁨</h2>
+                <span class="toggle-icon">@(expandedCategories.Contains(CategoryJoy) ? "▼" : "▶")</span>
             </div>
-        }
-    </div>
-</div>
-
-<!-- 느낌 표현 모달 -->
-@if (showModal)
-{
-    <div class="modal-overlay" @onclick="CloseModal">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>@(isEditing ? "느낌 수정" : "새 느낌 표현")</h3>
-                <button class="btn-close" @onclick="CloseModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <EditForm Model="currentFeeling" OnValidSubmit="SaveFeeling">
-                    <DataAnnotationsValidator />
+            
+            @if (expandedCategories.Contains(CategoryJoy))
+            {
+                <div class="category-content">
+                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryJoy))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
                     
-                    <div class="form-group">
-                        <label for="emoji">이모지</label>
-                        <div class="emoji-selector">
-                            @foreach (var emoji in emojis)
+                    @foreach (var example in joyExamples)
+                    {
+                        <div class="example-item">
+                            <div class="example-text">
+                                <strong>@example.SubCategory</strong> : @example.Description
+                            </div>
+                            @if (!example.IsDefault)
                             {
-                                <button type="button" class="emoji-btn @(currentFeeling.Emoji == emoji ? "selected" : "")" 
-                                        @onclick="() => SelectEmoji(emoji)">
-                                    @emoji
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteExample(example.Id)">
+                                    <span class="bi bi-trash"></span>
                                 </button>
                             }
                         </div>
-                    </div>
+                    }
+                </div>
+            }
+        </div>
 
-                    <div class="form-group">
-                        <label for="mood">기분</label>
-                        <InputSelect id="mood" @bind-Value="currentFeeling.Mood" class="form-control">
-                            <option value="">기분을 선택하세요</option>
-                            <option value="😊 행복">😊 행복</option>
-                            <option value="😢 슬픔">😢 슬픔</option>
-                            <option value="😠 화남">😠 화남</option>
-                            <option value="😰 불안">😰 불안</option>
-                            <option value="😌 평온">😌 평온</option>
-                            <option value="😍 사랑">😍 사랑</option>
-                            <option value="😔 우울">😔 우울</option>
-                            <option value="😤 짜증">😤 짜증</option>
-                            <option value="🤗 감동">🤗 감동</option>
-                            <option value="😴 피곤">😴 피곤</option>
-                        </InputSelect>
-                        <ValidationMessage For="@(() => currentFeeling.Mood)" class="text-danger" />
-                    </div>
+        <!-- 두려움 섹션 -->
+        <div class="category-section">
+            <div class="category-header" @onclick="@(() => ToggleCategory(CategoryFear))">
+                <h2>😰 두려움</h2>
+                <span class="toggle-icon">@(expandedCategories.Contains(CategoryFear) ? "▼" : "▶")</span>
+            </div>
+            
+            @if (expandedCategories.Contains(CategoryFear))
+            {
+                <div class="category-content">
+                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryFear))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
+                    
+                    @foreach (var example in fearExamples)
+                    {
+                        <div class="example-item">
+                            <div class="example-text">
+                                <strong>@example.SubCategory</strong> : @example.Description
+                            </div>
+                            @if (!example.IsDefault)
+                            {
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteExample(example.Id)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
 
-                    <div class="form-group">
-                        <label for="content">느낌 내용 *</label>
-                        <InputTextArea id="content" @bind-Value="currentFeeling.Content" 
-                                     class="form-control" rows="8"
-                                     placeholder="오늘의 감정과 느낌을 자유롭게 표현해보세요..." />
-                        <ValidationMessage For="@(() => currentFeeling.Content)" class="text-danger" />
-                        <small class="form-text text-muted">최소 5자 이상 입력해주세요.</small>
-                    </div>
+        <!-- 분노 섹션 -->
+        <div class="category-section">
+            <div class="category-header" @onclick="@(() => ToggleCategory(CategoryAnger))">
+                <h2>😠 분노</h2>
+                <span class="toggle-icon">@(expandedCategories.Contains(CategoryAnger) ? "▼" : "▶")</span>
+            </div>
+            
+            @if (expandedCategories.Contains(CategoryAnger))
+            {
+                <div class="category-content">
+                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryAnger))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
+                    
+                    @foreach (var example in angerExamples)
+                    {
+                        <div class="example-item">
+                            <div class="example-text">
+                                <strong>@example.SubCategory</strong> : @example.Description
+                            </div>
+                            @if (!example.IsDefault)
+                            {
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteExample(example.Id)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">취소</button>
-                        <button type="submit" class="btn btn-primary">저장</button>
-                    </div>
-                </EditForm>
+        <!-- 슬픔 섹션 -->
+        <div class="category-section">
+            <div class="category-header" @onclick="@(() => ToggleCategory(CategorySadness))">
+                <h2>😢 슬픔</h2>
+                <span class="toggle-icon">@(expandedCategories.Contains(CategorySadness) ? "▼" : "▶")</span>
+            </div>
+            
+            @if (expandedCategories.Contains(CategorySadness))
+            {
+                <div class="category-content">
+                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategorySadness))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
+                    
+                    @foreach (var example in sadnessExamples)
+                    {
+                        <div class="example-item">
+                            <div class="example-text">
+                                <strong>@example.SubCategory</strong> : @example.Description
+                            </div>
+                            @if (!example.IsDefault)
+                            {
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteExample(example.Id)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- 예시 추가 모달 -->
+@if (showAddModal)
+{
+    <div class="modal-overlay" @onclick="CloseAddModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>@selectedCategory 예시 추가</h3>
+                <button class="btn-close" @onclick="CloseAddModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="subCategory">하위 카테고리 *</label>
+                    <input type="text" id="subCategory" @bind="newExample.SubCategory" 
+                           class="form-control" placeholder="예: 가벼운, 개운한 등" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">설명 *</label>
+                    <textarea id="description" @bind="newExample.Description" 
+                              class="form-control" rows="4"
+                              placeholder="예: 새털처럼 빈 기방을 들 때처럼, 힘든 숙제를 다 마쳤을 때처럼"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="CloseAddModal">취소</button>
+                <button class="btn btn-primary" @onclick="AddExample">추가</button>
             </div>
         </div>
     </div>
 }
 
 @code {
-    private List<MeTenTenMaui.Models.Feeling> feelings = new();
-    private bool showModal = false;
-    private bool isEditing = false;
-    private MeTenTenMaui.Models.Feeling currentFeeling = new();
-    private readonly string[] emojis = { "😊", "😢", "😠", "😰", "😌", "😍", "😔", "😤", "🤗", "😴", "😄", "😭", "😡", "😨", "😇", "🥰", "😞", "😫", "🥺", "😴" };
+    private const string CategoryJoy = "기쁨";
+    private const string CategoryFear = "두려움";
+    private const string CategoryAnger = "분노";
+    private const string CategorySadness = "슬픔";
+    
+    private List<FeelingExample> allExamples = new();
+    private List<FeelingExample> joyExamples = new();
+    private List<FeelingExample> fearExamples = new();
+    private List<FeelingExample> angerExamples = new();
+    private List<FeelingExample> sadnessExamples = new();
+    
+    private HashSet<string> expandedCategories = new() { CategoryJoy }; // 기쁨은 기본으로 펼쳐짐
+    private bool showAddModal = false;
+    private bool isLoading = true;
+    private string selectedCategory = "";
+    private FeelingExample newExample = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadFeelings();
+        await LoadExamples();
     }
 
-    private async Task LoadFeelings()
+    private async Task LoadExamples()
     {
         try
         {
-            feelings = await FeelingService.GetAllFeelingsAsync();
-        }
-        catch (Exception ex)
-        {
-            // 에러 처리
-        }
-    }
-
-    private void ShowCreateModal()
-    {
-        isEditing = false;
-        currentFeeling = new MeTenTenMaui.Models.Feeling
-        {
-            Emoji = "😊",
-            Mood = "😊 행복",
-            CreatedAt = DateTime.Now
-        };
-        showModal = true;
-    }
-
-    private void EditFeeling(MeTenTenMaui.Models.Feeling feeling)
-    {
-        isEditing = true;
-        currentFeeling = new MeTenTenMaui.Models.Feeling
-        {
-            Id = feeling.Id,
-            Emoji = feeling.Emoji,
-            Mood = feeling.Mood,
-            Content = feeling.Content,
-            CreatedAt = feeling.CreatedAt
-        };
-        showModal = true;
-    }
-
-    private void SelectEmoji(string emoji)
-    {
-        currentFeeling.Emoji = emoji;
-    }
-
-    private async Task SaveFeeling()
-    {
-        try
-        {
-            if (isEditing)
-            {
-                await FeelingService.UpdateFeelingAsync(currentFeeling);
-            }
-            else
-            {
-                await FeelingService.CreateFeelingAsync(currentFeeling);
-            }
+            isLoading = true;
+            allExamples = await FeelingExampleService.GetAllExamplesAsync();
             
-            await LoadFeelings();
-            CloseModal();
+            joyExamples = allExamples.Where(e => e.Category == CategoryJoy).ToList();
+            fearExamples = allExamples.Where(e => e.Category == CategoryFear).ToList();
+            angerExamples = allExamples.Where(e => e.Category == CategoryAnger).ToList();
+            sadnessExamples = allExamples.Where(e => e.Category == CategorySadness).ToList();
+        }
+        catch (Exception ex)
+        {
+            // 에러 처리
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ToggleCategory(string category)
+    {
+        if (expandedCategories.Contains(category))
+        {
+            expandedCategories.Remove(category);
+        }
+        else
+        {
+            expandedCategories.Add(category);
+        }
+    }
+
+    private void ShowAddModal(string category)
+    {
+        selectedCategory = category;
+        newExample = new FeelingExample
+        {
+            Category = category
+        };
+        showAddModal = true;
+    }
+
+    private async Task AddExample()
+    {
+        if (string.IsNullOrWhiteSpace(newExample.SubCategory) || 
+            string.IsNullOrWhiteSpace(newExample.Description))
+        {
+            return;
+        }
+
+        try
+        {
+            await FeelingExampleService.AddExampleAsync(newExample);
+            await LoadExamples();
+            CloseAddModal();
         }
         catch (Exception ex)
         {
@@ -200,12 +271,12 @@
         }
     }
 
-    private async Task DeleteFeeling(int id)
+    private async Task DeleteExample(int id)
     {
         try
         {
-            await FeelingService.DeleteFeelingAsync(id);
-            await LoadFeelings();
+            await FeelingExampleService.DeleteExampleAsync(id);
+            await LoadExamples();
         }
         catch (Exception ex)
         {
@@ -213,14 +284,10 @@
         }
     }
 
-    private void CloseModal()
+    private void CloseAddModal()
     {
-        showModal = false;
-        currentFeeling = new MeTenTenMaui.Models.Feeling();
-    }
-
-    public void Dispose()
-    {
-        // 정리 작업
+        showAddModal = false;
+        newExample = new FeelingExample();
+        selectedCategory = "";
     }
 }

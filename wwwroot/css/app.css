@@ -2251,3 +2251,117 @@ h1:focus {
     padding-top: 1rem;
     border-top: 1px solid #e1e5e9;
 }
+
+/* 느낌 표현 예시 페이지 스타일 */
+.feeling-examples-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.category-section {
+    margin-bottom: 1.5rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.category-header:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #65418b 100%);
+}
+
+.category-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.category-content {
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+.example-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    transition: all 0.2s ease;
+}
+
+.example-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateX(3px);
+}
+
+.example-item:last-child {
+    margin-bottom: 0;
+}
+
+.example-text {
+    flex: 1;
+    line-height: 1.6;
+    color: #333;
+}
+
+.example-text strong {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.example-item button {
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .feeling-examples-container {
+        padding: 1rem;
+    }
+    
+    .category-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .category-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .category-content {
+        padding: 1rem;
+    }
+    
+    .example-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .example-item button {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+}
