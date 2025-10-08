@@ -311,7 +311,7 @@
         {
             isLoading = true;
             tenTens = await TenTenService.GetAllTenTensAsync();
-            topics = await TopicService.GetAllTopicsAsync();
+            topics = await TopicService.GetTopicsAsync(); // IsActive == true인 항목만 가져오기
         }
         catch (Exception ex)
         {
