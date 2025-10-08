@@ -74,24 +74,6 @@
                                         <span class="status-badge pending">미작성</span>
                                     }
                                 </div>
-                                <div class="topic-actions">
-                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => SelectTopic(topic)">
-                                        @if (HasTenTenForTopic(topic.Id))
-                                        {
-                                            <span class="bi bi-eye"></span> @("보기")
-                                        }
-                                        else
-                                        {
-                                            <span class="bi bi-pencil"></span> @("작성")
-                                        }
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => EditTopic(topic)">
-                                        <span class="bi bi-pencil-square"></span> 수정
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" @onclick:stopPropagation="true" @onclick="() => ShowDeleteConfirmation(topic)">
-                                        <span class="bi bi-trash"></span> 삭제
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -145,47 +127,6 @@
     </div>
 }
 
-<!-- 주제 수정 모달 -->
-@if (showEditTopicModal)
-{
-    <div class="modal-overlay" @onclick="CloseEditTopicModal">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>주제 수정</h3>
-                <button class="btn-close" @onclick="CloseEditTopicModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <EditForm Model="editTopic" OnValidSubmit="SaveEditTopic">
-                    <DataAnnotationsValidator />
-                    
-                    <div class="form-group">
-                        <label for="editTopicDate">날짜 *</label>
-                        <InputDate id="editTopicDate" @bind-Value="editTopic.TopicDate" class="form-control" />
-                        <ValidationMessage For="@(() => editTopic.TopicDate)" class="text-danger" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editTopicSubject">주제 *</label>
-                        <InputText id="editTopicSubject" @bind-Value="editTopic.Subject" 
-                                 class="form-control" placeholder="주제를 입력하세요" />
-                        <ValidationMessage For="@(() => editTopic.Subject)" class="text-danger" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editTopicDescription">설명</label>
-                        <InputTextArea id="editTopicDescription" @bind-Value="editTopic.Description" 
-                                     class="form-control" rows="3" placeholder="주제에 대한 설명을 입력하세요" />
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @onclick="CloseEditTopicModal">취소</button>
-                        <button type="submit" class="btn btn-primary">수정</button>
-                    </div>
-                </EditForm>
-            </div>
-        </div>
-    </div>
-}
 
 <!-- 삭제 확인 모달 -->
 @if (showDeleteConfirmationModal)
@@ -235,14 +176,19 @@
         <div class="writing-content">
                 @if (selectedTopic != null)
                 {
-                    <div class="topic-info-readonly">
-                        <h3>📝 주제: @selectedTopic.Subject</h3>
-                        @if (!string.IsNullOrEmpty(selectedTopic.Description))
-                        {
-                            <p class="topic-description">@selectedTopic.Description</p>
-                        }
-                        <div class="topic-meta">
+                    <div class="topic-info-section">
+                        <div class="form-group">
+                            <label for="topicSubject">주제 *</label>
+                            <input type="text" id="topicSubject" @bind="selectedTopic.Subject" 
+                                   class="form-control" placeholder="주제를 입력하세요" />
+                        </div>
+                        
+                        <div class="topic-meta-readonly">
                             <span class="topic-date">📅 @selectedTopic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
+                            @if (!string.IsNullOrEmpty(selectedTopic.Description))
+                            {
+                                <p class="topic-description">@selectedTopic.Description</p>
+                            }
                         </div>
                     </div>
 
@@ -258,6 +204,9 @@
                             </div>
                             <div class="writing-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">닫기</button>
+                                <button type="button" class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(selectedTopic)">
+                                    <span class="bi bi-trash"></span> 삭제
+                                </button>
                                 <button type="button" class="btn btn-warning" @onclick="() => EnableEditMode()">
                                     <span class="bi bi-pencil"></span> 수정
                                 </button>
@@ -316,6 +265,9 @@
 
                             <div class="writing-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">취소</button>
+                                <button type="button" class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(selectedTopic)">
+                                    <span class="bi bi-trash"></span> 삭제
+                                </button>
                                 <button type="submit" class="btn btn-primary btn-lg">저장</button>
                             </div>
                         </EditForm>
@@ -332,7 +284,6 @@
     private DateTime selectedMonth = DateTime.Now;
     private bool isLoading = true;
     private bool showNewTopicModal = false;
-    private bool showEditTopicModal = false;
     private bool showDeleteConfirmationModal = false;
     private bool showTenTenModal = false;
     private bool isEditing = false;
@@ -340,7 +291,6 @@
     private MeTenTenMaui.Models.Topic? topicToDelete;
     private MeTenTenMaui.Models.CreateTenTenRequest currentTenTen = new();
     private MeTenTenMaui.Models.CreateTopicRequest newTopic = new();
-    private MeTenTenMaui.Models.UpdateTopicRequest editTopic = new();
 
     // 타이머 관련 변수
     private int remainingTime = 600; // 10분 = 600초
@@ -408,38 +358,6 @@
         newTopic = new();
     }
 
-    private void EditTopic(MeTenTenMaui.Models.Topic topic)
-    {
-        editTopic = new MeTenTenMaui.Models.UpdateTopicRequest
-        {
-            Id = topic.Id,
-            Subject = topic.Subject,
-            Description = topic.Description,
-            TopicDate = topic.TopicDate
-        };
-        showEditTopicModal = true;
-    }
-
-    private void CloseEditTopicModal()
-    {
-        showEditTopicModal = false;
-        editTopic = new();
-    }
-
-    private async Task SaveEditTopic()
-    {
-        try
-        {
-            await TopicService.UpdateTopicAsync(editTopic.Id, editTopic);
-            await LoadData();
-            FilterTopicsByMonth();
-            CloseEditTopicModal();
-        }
-        catch (Exception ex)
-        {
-            // 에러 처리
-        }
-    }
 
     private void ShowDeleteConfirmation(MeTenTenMaui.Models.Topic topic)
     {
@@ -533,6 +451,20 @@
     {
         try
         {
+            // 주제 수정이 있으면 업데이트
+            if (selectedTopic != null)
+            {
+                var updateRequest = new MeTenTenMaui.Models.UpdateTopicRequest
+                {
+                    Id = selectedTopic.Id,
+                    Subject = selectedTopic.Subject,
+                    Description = selectedTopic.Description,
+                    TopicDate = selectedTopic.TopicDate,
+                    IsActive = true
+                };
+                await TopicService.UpdateTopicAsync(selectedTopic.Id, updateRequest);
+            }
+
             if (isEditing)
             {
                 var existingTenTen = tenTens.FirstOrDefault(t => t.TopicId == currentTenTen.TopicId);
