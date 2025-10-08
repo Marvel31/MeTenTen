@@ -18,6 +18,7 @@ public static class MauiProgram
 		builder.Services.AddMauiBlazorWebView();
 
 		// 서비스 등록
+		builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 		builder.Services.AddSingleton<ITenTenService, TenTenService>();
 		builder.Services.AddSingleton<ITopicService, TopicService>();
 		builder.Services.AddSingleton<IFeelingService, FeelingService>();

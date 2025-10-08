@@ -4,6 +4,7 @@
 @using MeTenTenMaui.Services
 @inject ITenTenService TenTenService
 @inject ITopicService TopicService
+@inject IFileStorageService FileStorageService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @implements IDisposable
@@ -25,6 +26,14 @@
                 <span class="selected-month-display clickable" @onclick="ShowMonthSelector">
                     📅 @GetSelectedMonthDisplay() <span class="bi bi-chevron-down"></span>
                 </span>
+            </div>
+            <div class="filter-item">
+                <button class="btn btn-secondary btn-sm" @onclick="ExportCurrentMonth">
+                    <span class="bi bi-download"></span> 내보내기
+                </button>
+                <button class="btn btn-secondary btn-sm" @onclick="ImportData">
+                    <span class="bi bi-upload"></span> 불러오기
+                </button>
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
@@ -295,6 +304,29 @@
     </div>
 }
 
+<!-- 불러오기 확인 모달 -->
+@if (showImportConfirmModal)
+{
+    <div class="modal-overlay" @onclick="CancelImport">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>데이터 병합 확인</h3>
+                <button class="btn-close" @onclick="CancelImport">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>불러온 파일에 동일한 날짜의 데이터가 있습니다.</p>
+                <p><strong>@duplicateCount 개</strong>의 중복 항목이 발견되었습니다.</p>
+                <p>기존 데이터를 덮어쓰시겠습니까?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="CancelImport">취소</button>
+                <button class="btn btn-danger" @onclick="ConfirmOverwrite">덮어쓰기</button>
+                <button class="btn btn-primary" @onclick="MergeWithoutOverwrite">건너뛰기</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<MeTenTenMaui.Models.TenTen> tenTens = new();
     private List<MeTenTenMaui.Models.Topic> topics = new();
@@ -305,11 +337,17 @@
     private bool showMonthSelectorModal = false;
     private bool showDeleteConfirmationModal = false;
     private bool showTenTenModal = false;
+    private bool showImportConfirmModal = false;
     private bool isEditing = false;
     private MeTenTenMaui.Models.Topic? selectedTopic;
     private MeTenTenMaui.Models.Topic? topicToDelete;
     private MeTenTenMaui.Models.CreateTenTenRequest currentTenTen = new();
     private MeTenTenMaui.Models.CreateTopicRequest newTopic = new();
+    
+    // 불러오기 관련 변수
+    private List<MeTenTenMaui.Models.TenTen> importedTenTens = new();
+    private List<MeTenTenMaui.Models.Topic> importedTopics = new();
+    private int duplicateCount = 0;
 
     // 타이머 관련 변수
     private int remainingTime = 600; // 10분 = 600초
@@ -613,6 +651,191 @@
             return monthDate.ToString("yyyy년 MM월");
         }
         return selectedMonth.ToString("yyyy년 MM월");
+    }
+
+    // 내보내기
+    private async Task ExportCurrentMonth()
+    {
+        try
+        {
+            var year = selectedMonth.Year;
+            var month = selectedMonth.Month;
+            
+            // 현재 월의 데이터 필터링
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            
+            var monthTenTens = tenTens.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
+            var monthTopics = topics.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
+            
+            // 파일로 내보내기
+            var exportPath = await FileStorageService.ExportMonthDataAsync(year, month, monthTenTens, monthTopics);
+            
+            // 사용자가 선택한 위치로 파일 저장
+            var fileName = $"tenten_{year:0000}_{month:00}.txt";
+            var result = await SaveFileAsync(fileName, exportPath);
+            
+            if (result != null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{year}년 {month}월 데이터를 {result}에 저장했습니다.");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "파일 저장을 취소했습니다.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"내보내기 실패: {ex.Message}");
+        }
+    }
+
+    // 불러오기
+    private async Task ImportData()
+    {
+        try
+        {
+            var result = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "10&10 데이터 파일 선택",
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".txt" } },
+                    { DevicePlatform.Android, new[] { "text/plain" } },
+                    { DevicePlatform.iOS, new[] { "public.text" } }
+                })
+            });
+            
+            if (result != null)
+            {
+                var (loadedTenTens, loadedTopics) = await FileStorageService.ImportDataAsync(result.FullPath);
+                
+                importedTenTens = loadedTenTens;
+                importedTopics = loadedTopics;
+                
+                // 중복 체크
+                var duplicateTenTens = tenTens.Count(t => importedTenTens.Any(i => 
+                    i.CreatedAt.Date == t.CreatedAt.Date && i.TopicId == t.TopicId));
+                var duplicateTopics = topics.Count(t => importedTopics.Any(i => 
+                    i.CreatedAt.Date == t.CreatedAt.Date));
+                
+                duplicateCount = duplicateTenTens + duplicateTopics;
+                
+                if (duplicateCount > 0)
+                {
+                    showImportConfirmModal = true;
+                }
+                else
+                {
+                    await MergeWithoutOverwrite();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"불러오기 실패: {ex.Message}");
+        }
+    }
+
+    // 덮어쓰기
+    private async Task ConfirmOverwrite()
+    {
+        try
+        {
+            // 기존 데이터에서 중복 제거
+            tenTens.RemoveAll(t => importedTenTens.Any(i => 
+                i.CreatedAt.Date == t.CreatedAt.Date && i.TopicId == t.TopicId));
+            topics.RemoveAll(t => importedTopics.Any(i => 
+                i.CreatedAt.Date == t.CreatedAt.Date));
+            
+            // 새 데이터 추가
+            tenTens.AddRange(importedTenTens);
+            topics.AddRange(importedTopics);
+            
+            await LoadData();
+            FilterTopicsByMonth();
+            
+            showImportConfirmModal = false;
+            await JSRuntime.InvokeVoidAsync("alert", "데이터를 성공적으로 불러왔습니다.");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"병합 실패: {ex.Message}");
+        }
+    }
+
+    // 중복 건너뛰기
+    private async Task MergeWithoutOverwrite()
+    {
+        try
+        {
+            // 중복되지 않는 항목만 추가
+            var newTenTens = importedTenTens.Where(i => !tenTens.Any(t => 
+                t.CreatedAt.Date == i.CreatedAt.Date && t.TopicId == i.TopicId)).ToList();
+            var newTopics = importedTopics.Where(i => !topics.Any(t => 
+                t.CreatedAt.Date == i.CreatedAt.Date)).ToList();
+            
+            tenTens.AddRange(newTenTens);
+            topics.AddRange(newTopics);
+            
+            await LoadData();
+            FilterTopicsByMonth();
+            
+            showImportConfirmModal = false;
+            await JSRuntime.InvokeVoidAsync("alert", $"중복을 제외한 데이터를 불러왔습니다. (추가: {newTenTens.Count + newTopics.Count}개)");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"병합 실패: {ex.Message}");
+        }
+    }
+
+    // 불러오기 취소
+    private void CancelImport()
+    {
+        showImportConfirmModal = false;
+        importedTenTens.Clear();
+        importedTopics.Clear();
+        duplicateCount = 0;
+    }
+
+    // 파일 저장 헬퍼
+    private async Task<string?> SaveFileAsync(string fileName, string sourcePath)
+    {
+        try
+        {
+#if WINDOWS
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+            var window = Application.Current?.Windows[0]?.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
+            if (window != null)
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+            }
+            
+            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+            savePicker.SuggestedFileName = fileName;
+            savePicker.FileTypeChoices.Add("텍스트 파일", new List<string>() { ".txt" });
+            
+            var file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                File.Copy(sourcePath, file.Path, true);
+                return file.Path;
+            }
+#else
+            // Android/iOS의 경우 Downloads 폴더에 저장
+            var downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var destinationPath = Path.Combine(downloadsPath, fileName);
+            File.Copy(sourcePath, destinationPath, true);
+            return destinationPath;
+#endif
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public void Dispose()

@@ -2233,3 +2233,21 @@ h1:focus {
         font-size: 0.8rem;
     }
 }
+
+/* 내보내기/불러오기 버튼 스타일 */
+.filter-item .btn-secondary {
+    margin-right: 0.5rem;
+}
+
+.filter-item .btn-secondary:last-child {
+    margin-right: 0;
+}
+
+/* 병합 확인 모달 스타일 */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e1e5e9;
+}
