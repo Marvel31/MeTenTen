@@ -22,17 +22,9 @@
     <div class="month-filter-compact">
         <div class="filter-row">
             <div class="filter-item">
-                <label for="monthSelect">월 선택:</label>
-                <select id="monthSelect" @bind="selectedMonth" @bind:after="OnMonthChanged" class="form-control form-control-sm">
-                    @for (int i = 0; i < 12; i++)
-                    {
-                        var month = DateTime.Now.AddMonths(-i);
-                        <option value="@month.ToString("yyyy-MM")">@month.ToString("yyyy년 MM월")</option>
-                    }
-                </select>
-            </div>
-            <div class="filter-item">
-                <span class="selected-month-display">📅 @GetSelectedMonthDisplay()</span>
+                <span class="selected-month-display clickable" @onclick="ShowMonthSelector">
+                    📅 @GetSelectedMonthDisplay() <span class="bi bi-chevron-down"></span>
+                </span>
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
@@ -90,6 +82,32 @@
         </div>
     }
 </div>
+
+<!-- 월 선택 모달 -->
+@if (showMonthSelectorModal)
+{
+    <div class="modal-overlay" @onclick="CloseMonthSelector">
+        <div class="modal-content month-selector-modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>월 선택</h3>
+                <button class="btn-close" @onclick="CloseMonthSelector">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="month-grid">
+                    @for (int i = -6; i <= 6; i++)
+                    {
+                        var month = DateTime.Now.AddMonths(i);
+                        var isSelected = month.Year == selectedMonth.Year && month.Month == selectedMonth.Month;
+                        <button class="month-item @(isSelected ? "selected" : "")" 
+                                @onclick="() => SelectMonth(month)">
+                            @month.ToString("yyyy년 MM월")
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <!-- 새 주제 추가 모달 -->
 @if (showNewTopicModal)
@@ -284,6 +302,7 @@
     private DateTime selectedMonth = DateTime.Now;
     private bool isLoading = true;
     private bool showNewTopicModal = false;
+    private bool showMonthSelectorModal = false;
     private bool showDeleteConfirmationModal = false;
     private bool showTenTenModal = false;
     private bool isEditing = false;
@@ -335,6 +354,24 @@
         var endDate = startDate.AddMonths(1).AddDays(-1);
         
         filteredTopics = topics.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
+    }
+
+    private void ShowMonthSelector()
+    {
+        showMonthSelectorModal = true;
+    }
+
+    private void CloseMonthSelector()
+    {
+        showMonthSelectorModal = false;
+    }
+
+    private void SelectMonth(DateTime month)
+    {
+        selectedMonth = new DateTime(month.Year, month.Month, 1);
+        FilterTopicsByMonth();
+        CloseMonthSelector();
+        StateHasChanged();
     }
 
     private bool HasTenTenForTopic(int topicId)
