@@ -24,8 +24,8 @@
             <button class="tab-btn @(selectedCategory == "family" ? "active" : "")" @onclick='() => SelectCategory("family")'>
                 가족 기도
             </button>
-            <button class="tab-btn @(selectedCategory == "daily" ? "active" : "")" @onclick='() => SelectCategory("daily")'>
-                일상 기도
+            <button class="tab-btn @(selectedCategory == "church" ? "active" : "")" @onclick='() => SelectCategory("church")'>
+                교회 기도
             </button>
         </div>
     </div>
@@ -166,7 +166,7 @@
         {
             "marriage" => "부부 기도",
             "family" => "가족 기도",
-            "daily" => "일상 기도",
+            "church" => "교회 기도",
             _ => "기타"
         };
     }
