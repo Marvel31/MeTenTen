@@ -20,38 +20,59 @@ namespace MeTenTenMaui.Services
 
         public async Task SaveTenTensAsync(List<TenTen> tenTens)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("=== TenTen Data ===");
-            
-            foreach (var item in tenTens)
+            try
             {
-                sb.AppendLine($"ID: {item.Id}");
-                sb.AppendLine($"Content: {item.Content}");
-                sb.AppendLine($"CreatedAt: {item.CreatedAt:yyyy-MM-dd HH:mm:ss}");
-                sb.AppendLine($"UpdatedAt: {item.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
-                sb.AppendLine($"UserId: {item.UserId}");
-                sb.AppendLine($"UserName: {item.UserName}");
-                sb.AppendLine($"TopicId: {item.TopicId}");
-                sb.AppendLine($"TopicSubject: {item.TopicSubject}");
-                sb.AppendLine($"IsReadByPartner: {item.IsReadByPartner}");
-                sb.AppendLine($"ReadByPartnerAt: {item.ReadByPartnerAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
-                sb.AppendLine($"EmotionTag: {item.EmotionTag ?? ""}");
-                sb.AppendLine($"ImportanceLevel: {item.ImportanceLevel?.ToString() ?? ""}");
-                sb.AppendLine("---");
-            }
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Saving {tenTens.Count} TenTens to {_tenTensFilePath}");
+                
+                var sb = new StringBuilder();
+                sb.AppendLine("=== TenTen Data ===");
+                
+                foreach (var item in tenTens)
+                {
+                    sb.AppendLine($"ID: {item.Id}");
+                    sb.AppendLine($"Content: {item.Content}");
+                    sb.AppendLine($"CreatedAt: {item.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                    sb.AppendLine($"UpdatedAt: {item.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
+                    sb.AppendLine($"UserId: {item.UserId}");
+                    sb.AppendLine($"UserName: {item.UserName}");
+                    sb.AppendLine($"TopicId: {item.TopicId}");
+                    sb.AppendLine($"TopicSubject: {item.TopicSubject}");
+                    sb.AppendLine($"IsReadByPartner: {item.IsReadByPartner}");
+                    sb.AppendLine($"ReadByPartnerAt: {item.ReadByPartnerAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
+                    sb.AppendLine($"EmotionTag: {item.EmotionTag ?? ""}");
+                    sb.AppendLine($"ImportanceLevel: {item.ImportanceLevel?.ToString() ?? ""}");
+                    sb.AppendLine("---");
+                }
 
-            await File.WriteAllTextAsync(_tenTensFilePath, sb.ToString(), Encoding.UTF8);
+                await File.WriteAllTextAsync(_tenTensFilePath, sb.ToString(), Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Successfully saved to {_tenTensFilePath}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] ERROR saving TenTens: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<List<TenTen>> LoadTenTensAsync()
         {
+            System.Diagnostics.Debug.WriteLine($"[FileStorage] Loading TenTens from {_tenTensFilePath}");
+            System.Diagnostics.Debug.WriteLine($"[FileStorage] File exists: {File.Exists(_tenTensFilePath)}");
+            
             var tenTens = new List<TenTen>();
             
             if (!File.Exists(_tenTensFilePath))
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] File not found, returning empty list");
                 return tenTens;
+            }
 
-            var content = await File.ReadAllTextAsync(_tenTensFilePath, Encoding.UTF8);
-            var lines = content.Split('\n');
+            try
+            {
+                var content = await File.ReadAllTextAsync(_tenTensFilePath, Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] File content length: {content.Length}");
+                var lines = content.Split('\n');
             
             TenTen? currentTenTen = null;
             
@@ -129,11 +150,22 @@ namespace MeTenTenMaui.Services
                 }
             }
             
-            return tenTens;
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Loaded {tenTens.Count} TenTens");
+                return tenTens;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] ERROR loading TenTens: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Stack trace: {ex.StackTrace}");
+                return tenTens;
+            }
         }
 
         public async Task SaveTopicsAsync(List<Topic> topics)
         {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Saving {topics.Count} Topics to {_topicsFilePath}");
             var sb = new StringBuilder();
             sb.AppendLine("=== Topics Data ===");
             
@@ -149,18 +181,35 @@ namespace MeTenTenMaui.Services
                 sb.AppendLine("---");
             }
 
-            await File.WriteAllTextAsync(_topicsFilePath, sb.ToString(), Encoding.UTF8);
+                await File.WriteAllTextAsync(_topicsFilePath, sb.ToString(), Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Successfully saved to {_topicsFilePath}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] ERROR saving Topics: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<List<Topic>> LoadTopicsAsync()
         {
+            System.Diagnostics.Debug.WriteLine($"[FileStorage] Loading Topics from {_topicsFilePath}");
+            System.Diagnostics.Debug.WriteLine($"[FileStorage] File exists: {File.Exists(_topicsFilePath)}");
+            
             var topics = new List<Topic>();
             
             if (!File.Exists(_topicsFilePath))
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Topics file not found, returning empty list");
                 return topics;
+            }
 
-            var content = await File.ReadAllTextAsync(_topicsFilePath, Encoding.UTF8);
-            var lines = content.Split('\n');
+            try
+            {
+                var content = await File.ReadAllTextAsync(_topicsFilePath, Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Topics file content length: {content.Length}");
+                var lines = content.Split('\n');
             
             Topic? currentTopic = null;
             
@@ -222,7 +271,15 @@ namespace MeTenTenMaui.Services
                 }
             }
             
-            return topics;
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Loaded {topics.Count} Topics");
+                return topics;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] ERROR loading Topics: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[FileStorage] Stack trace: {ex.StackTrace}");
+                return topics;
+            }
         }
 
         public async Task<string> ExportMonthDataAsync(int year, int month, List<TenTen> tenTens, List<Topic> topics)

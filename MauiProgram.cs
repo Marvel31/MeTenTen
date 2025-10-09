@@ -17,6 +17,10 @@ public static class MauiProgram
 
 		builder.Services.AddMauiBlazorWebView();
 
+		// 앱 데이터 디렉토리 로깅
+		System.Diagnostics.Debug.WriteLine($"[App] AppDataDirectory: {FileSystem.AppDataDirectory}");
+		System.Diagnostics.Debug.WriteLine($"[App] CacheDirectory: {FileSystem.CacheDirectory}");
+
 		// 서비스 등록
 		builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 		builder.Services.AddSingleton<ITenTenService, TenTenService>();
