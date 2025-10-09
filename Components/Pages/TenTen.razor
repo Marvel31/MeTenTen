@@ -15,8 +15,31 @@
 
 <div class="tenten-container">
     <div class="tenten-header">
-        <h1>💕 10&10</h1>
-        <p>10분간 마음을 적고 10분간 대화를 나누세요</p>
+        <div class="header-content">
+            <div class="header-text">
+                <h1>💕 10&10</h1>
+                <p>10분간 마음을 적고 10분간 대화를 나누세요</p>
+            </div>
+            <div class="header-actions">
+                <div class="settings-menu-container">
+                    <button class="btn btn-secondary btn-sm settings-icon-btn" @onclick="ToggleSettingsMenu">
+                        <span class="bi bi-gear"></span>
+                    </button>
+                    
+                    @if (showSettingsMenu)
+                    {
+                        <div class="settings-dropdown-menu">
+                            <button class="settings-menu-item" @onclick="ExportCurrentMonth">
+                                <span class="bi bi-download"></span> 내보내기
+                            </button>
+                            <button class="settings-menu-item" @onclick="ImportData">
+                                <span class="bi bi-upload"></span> 불러오기
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 월별 필터링 -->
@@ -26,23 +49,6 @@
                 <span class="selected-month-display clickable" @onclick="ShowMonthSelector">
                     📅 @GetSelectedMonthDisplay() <span class="bi bi-chevron-down"></span>
                 </span>
-            </div>
-            <div class="filter-item settings-menu-container">
-                <button class="btn btn-secondary btn-sm settings-icon-btn" @onclick="ToggleSettingsMenu">
-                    <span class="bi bi-gear"></span>
-                </button>
-                
-                @if (showSettingsMenu)
-                {
-                    <div class="settings-dropdown-menu">
-                        <button class="settings-menu-item" @onclick="ExportCurrentMonth">
-                            <span class="bi bi-download"></span> 내보내기
-                        </button>
-                        <button class="settings-menu-item" @onclick="ImportData">
-                            <span class="bi bi-upload"></span> 불러오기
-                        </button>
-                    </div>
-                }
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
