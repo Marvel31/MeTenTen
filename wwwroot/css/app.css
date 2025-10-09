@@ -2415,3 +2415,48 @@ h1:focus {
     padding-top: 1rem;
     border-top: 1px solid #e1e5e9;
 }
+
+/* 설정 메뉴 스타일 */
+.settings-menu-container {
+    position: relative;
+}
+
+.settings-icon-btn {
+    padding: 0.375rem 0.75rem;
+}
+
+.settings-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.settings-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: white;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+.settings-menu-item .bi {
+    font-size: 1rem;
+}

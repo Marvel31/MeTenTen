@@ -27,13 +27,22 @@
                     📅 @GetSelectedMonthDisplay() <span class="bi bi-chevron-down"></span>
                 </span>
             </div>
-            <div class="filter-item">
-                <button class="btn btn-secondary btn-sm" @onclick="ExportCurrentMonth">
-                    <span class="bi bi-download"></span> 내보내기
+            <div class="filter-item settings-menu-container">
+                <button class="btn btn-secondary btn-sm settings-icon-btn" @onclick="ToggleSettingsMenu">
+                    <span class="bi bi-gear"></span>
                 </button>
-                <button class="btn btn-secondary btn-sm" @onclick="ImportData">
-                    <span class="bi bi-upload"></span> 불러오기
-                </button>
+                
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown-menu">
+                        <button class="settings-menu-item" @onclick="ExportCurrentMonth">
+                            <span class="bi bi-download"></span> 내보내기
+                        </button>
+                        <button class="settings-menu-item" @onclick="ImportData">
+                            <span class="bi bi-upload"></span> 불러오기
+                        </button>
+                    </div>
+                }
             </div>
             <div class="filter-item">
                 <button class="btn btn-primary btn-sm" @onclick="ShowNewTopicModal">
@@ -64,7 +73,8 @@
                                 <h5>@topic.Subject</h5>
                             </div>
                             <div class="topic-meta-line">
-                                <div class="topic-date-status">
+                                <div class="
+">
                                     <span class="topic-date">@topic.TopicDate.ToString("yyyy년 MM월 dd일")</span>
                                     @if (HasTenTenForTopic(topic.Id))
                                     {
@@ -348,6 +358,9 @@
     private List<MeTenTenMaui.Models.TenTen> importedTenTens = new();
     private List<MeTenTenMaui.Models.Topic> importedTopics = new();
     private int duplicateCount = 0;
+    
+    // 설정 메뉴 변수
+    private bool showSettingsMenu = false;
 
     // 타이머 관련 변수
     private int remainingTime = 600; // 10분 = 600초
@@ -410,6 +423,11 @@
         FilterTopicsByMonth();
         CloseMonthSelector();
         StateHasChanged();
+    }
+
+    private void ToggleSettingsMenu()
+    {
+        showSettingsMenu = !showSettingsMenu;
     }
 
     private bool HasTenTenForTopic(int topicId)
@@ -656,6 +674,8 @@
     // 내보내기
     private async Task ExportCurrentMonth()
     {
+        showSettingsMenu = false; // 메뉴 닫기
+        
         try
         {
             var year = selectedMonth.Year;
@@ -693,6 +713,8 @@
     // 불러오기
     private async Task ImportData()
     {
+        showSettingsMenu = false; // 메뉴 닫기
+        
         try
         {
             var result = await FilePicker.Default.PickAsync(new PickOptions
