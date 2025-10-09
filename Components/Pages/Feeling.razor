@@ -33,10 +33,6 @@
             @if (expandedCategories.Contains(CategoryJoy))
             {
                 <div class="category-content">
-                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryJoy))">
-                        <span class="bi bi-plus-circle"></span> 예시 추가
-                    </button>
-                    
                     @foreach (var example in joyExamples)
                     {
                         <div class="example-item">
@@ -51,6 +47,10 @@
                             }
                         </div>
                     }
+                    
+                    <button class="btn btn-sm btn-primary mt-3" @onclick="@(() => ShowAddModal(CategoryJoy))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
                 </div>
             }
         </div>
@@ -65,10 +65,6 @@
             @if (expandedCategories.Contains(CategoryFear))
             {
                 <div class="category-content">
-                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryFear))">
-                        <span class="bi bi-plus-circle"></span> 예시 추가
-                    </button>
-                    
                     @foreach (var example in fearExamples)
                     {
                         <div class="example-item">
@@ -83,6 +79,10 @@
                             }
                         </div>
                     }
+                    
+                    <button class="btn btn-sm btn-primary mt-3" @onclick="@(() => ShowAddModal(CategoryFear))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
                 </div>
             }
         </div>
@@ -97,10 +97,6 @@
             @if (expandedCategories.Contains(CategoryAnger))
             {
                 <div class="category-content">
-                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategoryAnger))">
-                        <span class="bi bi-plus-circle"></span> 예시 추가
-                    </button>
-                    
                     @foreach (var example in angerExamples)
                     {
                         <div class="example-item">
@@ -115,6 +111,10 @@
                             }
                         </div>
                     }
+                    
+                    <button class="btn btn-sm btn-primary mt-3" @onclick="@(() => ShowAddModal(CategoryAnger))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
                 </div>
             }
         </div>
@@ -129,10 +129,6 @@
             @if (expandedCategories.Contains(CategorySadness))
             {
                 <div class="category-content">
-                    <button class="btn btn-sm btn-primary mb-3" @onclick="@(() => ShowAddModal(CategorySadness))">
-                        <span class="bi bi-plus-circle"></span> 예시 추가
-                    </button>
-                    
                     @foreach (var example in sadnessExamples)
                     {
                         <div class="example-item">
@@ -147,6 +143,10 @@
                             }
                         </div>
                     }
+                    
+                    <button class="btn btn-sm btn-primary mt-3" @onclick="@(() => ShowAddModal(CategorySadness))">
+                        <span class="bi bi-plus-circle"></span> 예시 추가
+                    </button>
                 </div>
             }
         </div>
@@ -291,3 +291,4 @@
         selectedCategory = "";
     }
 }
+
