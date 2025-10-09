@@ -17,9 +17,16 @@
             }
         </ol>
     </nav>
+    @if (Actions != null)
+    {
+        <div class="breadcrumb-actions">
+            @Actions
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string CurrentPageTitle { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Actions { get; set; }
 }
 
