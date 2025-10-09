@@ -2365,3 +2365,53 @@ h1:focus {
         align-self: flex-end;
     }
 }
+
+/* 기도문 펼침/접기 스타일 */
+.prayer-item {
+    margin-bottom: 1rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.prayer-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.prayer-item-header:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #65418b 100%);
+}
+
+.prayer-item-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.prayer-item-content {
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+.prayer-text {
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 1rem;
+    white-space: pre-line;
+}
+
+.prayer-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e1e5e9;
+}
