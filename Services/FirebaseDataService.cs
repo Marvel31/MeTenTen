@@ -103,25 +103,32 @@ namespace MeTenTenMaui.Services
         {
             try
             {
-                var firebaseTopic = new FirebaseTopic
+                // Patch로 필요한 필드만 업데이트
+                var updates = new
                 {
-                    Id = topicId,
-                    Subject = request.Subject,
-                    Description = request.Description,
-                    TopicDate = request.TopicDate.ToString("yyyy-MM-dd"),
-                    UpdatedAt = DateTime.Now.ToString("o"),
-                    IsActive = request.IsActive
+                    subject = request.Subject,
+                    description = request.Description,
+                    topicDate = request.TopicDate.ToString("yyyy-MM-dd"),
+                    updatedAt = DateTime.Now.ToString("o"),
+                    isActive = request.IsActive
                 };
 
                 await _firebaseClient
                     .Child("topics")
                     .Child(userId)
                     .Child(topicId)
-                    .PatchAsync(firebaseTopic);
+                    .PatchAsync(updates);
 
-                var topic = ConvertFromFirebase(firebaseTopic, topicId, 0);
-                System.Diagnostics.Debug.WriteLine($"[Firebase] Updated topic: {topic.Subject}");
-                return topic;
+                // 업데이트된 전체 데이터를 다시 가져오기
+                var updatedTopic = await GetTopicByIdAsync(userId, topicId);
+                
+                if (updatedTopic != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Updated topic: {updatedTopic.Subject}");
+                    return updatedTopic;
+                }
+
+                throw new Exception("Updated topic not found");
             }
             catch (Exception ex)
             {
@@ -333,13 +340,24 @@ namespace MeTenTenMaui.Services
             {
                 Id = localId,
                 FirebaseKey = firebaseKey,
-                Subject = firebaseTopic.Subject,
-                Description = firebaseTopic.Description,
-                TopicDate = DateTime.Parse(firebaseTopic.TopicDate),
-                CreatedAt = DateTime.Parse(firebaseTopic.CreatedAt),
-                UpdatedAt = string.IsNullOrEmpty(firebaseTopic.UpdatedAt) ? null : DateTime.Parse(firebaseTopic.UpdatedAt),
+                Subject = firebaseTopic.Subject ?? string.Empty,
+                Description = firebaseTopic.Description ?? string.Empty,
+                TopicDate = ParseDate(firebaseTopic.TopicDate, DateTime.Today),
+                CreatedAt = ParseDate(firebaseTopic.CreatedAt, DateTime.Now),
+                UpdatedAt = string.IsNullOrEmpty(firebaseTopic.UpdatedAt) ? null : ParseDate(firebaseTopic.UpdatedAt, null),
                 IsActive = firebaseTopic.IsActive
             };
+        }
+
+        private DateTime ParseDate(string? dateString, DateTime? defaultValue)
+        {
+            if (string.IsNullOrEmpty(dateString))
+                return defaultValue ?? DateTime.Now;
+
+            if (DateTime.TryParse(dateString, out DateTime result))
+                return result;
+
+            return defaultValue ?? DateTime.Now;
         }
 
         private TenTen ConvertFromFirebase(FirebaseTenTen firebaseTenTen, string firebaseKey, int localId)
@@ -348,10 +366,10 @@ namespace MeTenTenMaui.Services
             {
                 Id = localId,
                 FirebaseKey = firebaseKey,
-                TopicId = int.Parse(firebaseTenTen.TopicId),
-                Content = firebaseTenTen.Content,
-                CreatedAt = DateTime.Parse(firebaseTenTen.CreatedAt),
-                UpdatedAt = string.IsNullOrEmpty(firebaseTenTen.UpdatedAt) ? null : DateTime.Parse(firebaseTenTen.UpdatedAt),
+                TopicId = int.TryParse(firebaseTenTen.TopicId, out int topicId) ? topicId : 0,
+                Content = firebaseTenTen.Content ?? string.Empty,
+                CreatedAt = ParseDate(firebaseTenTen.CreatedAt, DateTime.Now),
+                UpdatedAt = string.IsNullOrEmpty(firebaseTenTen.UpdatedAt) ? null : ParseDate(firebaseTenTen.UpdatedAt, null),
                 UserId = 1,
                 UserName = "현재 사용자",
                 TopicSubject = "",
