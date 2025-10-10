@@ -21,13 +21,17 @@ public static class MauiProgram
 		System.Diagnostics.Debug.WriteLine($"[App] AppDataDirectory: {FileSystem.AppDataDirectory}");
 		System.Diagnostics.Debug.WriteLine($"[App] CacheDirectory: {FileSystem.CacheDirectory}");
 
-		// 서비스 등록
-		builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
-		builder.Services.AddSingleton<ITenTenService, TenTenService>();
-		builder.Services.AddSingleton<ITopicService, TopicService>();
-		builder.Services.AddSingleton<IFeelingService, FeelingService>();
-		builder.Services.AddSingleton<IFeelingExampleService, FeelingExampleService>();
-		builder.Services.AddSingleton<IPrayerService, PrayerService>();
+	// 서비스 등록
+	// Firebase Authentication
+	builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
+	
+	// Data Services
+	builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+	builder.Services.AddSingleton<ITenTenService, TenTenService>();
+	builder.Services.AddSingleton<ITopicService, TopicService>();
+	builder.Services.AddSingleton<IFeelingService, FeelingService>();
+	builder.Services.AddSingleton<IFeelingExampleService, FeelingExampleService>();
+	builder.Services.AddSingleton<IPrayerService, PrayerService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

@@ -1,4 +1,7 @@
 ﻿@page "/"
+@using MeTenTenMaui.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>홈 - MeTenTen</PageTitle>
 
@@ -40,3 +43,18 @@
         <p>10분간 편지를 쓰고, 편지를 교환한 후 10분간 대화를 나누는 시간을 통해 서로의 마음을 더 깊이 이해할 수 있습니다.</p>
     </div>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // 인증 체크 - 로그인하지 않은 경우 로그인 페이지로 이동
+        if (!AuthService.IsAuthenticated)
+        {
+            var autoLoginSuccess = await AuthService.TryAutoLoginAsync();
+            if (!autoLoginSuccess)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+        }
+    }
+}

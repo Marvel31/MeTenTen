@@ -1,0 +1,182 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using MeTenTenMaui.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>로그인 - MeTenTen</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>💕 MeTenTen</h1>
+            <p>10분간 마음을 적고 10분간 대화를 나누세요</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">
+                @errorMessage
+            </div>
+        }
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <InputText id="email" @bind-Value="loginModel.Email" 
+                          class="form-control" placeholder="email@example.com" />
+                <ValidationMessage For="@(() => loginModel.Email)" class="text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <InputText id="password" @bind-Value="loginModel.Password" 
+                          type="password" class="form-control" placeholder="비밀번호" />
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span>로그인 중...</span>
+                }
+                else
+                {
+                    <span>로그인</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="login-footer">
+            <p>계정이 없으신가요?</p>
+            <button class="btn btn-outline-secondary" @onclick="NavigateToSignUp">
+                회원가입
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 100%;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .login-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #667eea;
+    }
+
+    .login-header p {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1rem;
+        margin-top: 10px;
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .login-footer p {
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+
+    .alert {
+        margin-bottom: 20px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+</style>
+
+@code {
+    private LoginModel loginModel = new();
+    private string? errorMessage;
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var (success, error) = await AuthService.SignInAsync(loginModel.Email, loginModel.Password);
+
+            if (success)
+            {
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = error ?? "로그인에 실패했습니다.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "로그인 중 오류가 발생했습니다: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateToSignUp()
+    {
+        Navigation.NavigateTo("/signup");
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "이메일을 입력해주세요.")]
+        [EmailAddress(ErrorMessage = "올바른 이메일 형식이 아닙니다.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "비밀번호를 입력해주세요.")]
+        public string Password { get; set; } = string.Empty;
+    }
+}
+
