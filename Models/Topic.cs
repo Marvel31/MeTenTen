@@ -3,6 +3,7 @@ namespace MeTenTenMaui.Models
     public class Topic
     {
         public int Id { get; set; }
+        public string? FirebaseKey { get; set; } // Firebase Realtime DB key
         public string Subject { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime TopicDate { get; set; }

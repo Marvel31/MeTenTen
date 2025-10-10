@@ -3,6 +3,7 @@ namespace MeTenTenMaui.Models
     public class TenTen
     {
         public int Id { get; set; }
+        public string? FirebaseKey { get; set; } // Firebase Realtime DB key
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
