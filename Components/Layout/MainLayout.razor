@@ -1,9 +1,22 @@
 ﻿@inherits LayoutComponentBase
+@using MeTenTenMaui.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
 
 <div class="page">
     <main>
         <div class="top-row px-4">
             <h1 class="navbar-brand">MeTenTen</h1>
+            
+            @if (AuthService.IsAuthenticated)
+            {
+                <div class="user-info-section">
+                    <span class="user-email">👤 @AuthService.CurrentUserEmail</span>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="HandleLogout">
+                        <span class="bi bi-box-arrow-right"></span> 로그아웃
+                    </button>
+                </div>
+            }
         </div>
 
         <article class="content px-4">
@@ -11,3 +24,11 @@
         </article>
     </main>
 </div>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await AuthService.SignOutAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}
