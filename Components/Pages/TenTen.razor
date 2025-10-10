@@ -224,7 +224,7 @@
                                 <h3>@selectedTopic.Subject</h3>
                             </div>
                             <div class="topic-meta-readonly">
-                                <span class="topic-date">📅 @selectedTopic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
+                                <span class="topic-date">📅 @selectedTopic.TopicDate.ToString("yyyy년 MM월 dd일")</span>
                                 @if (!string.IsNullOrEmpty(selectedTopic.Description))
                                 {
                                     <p class="topic-description">@selectedTopic.Description</p>
@@ -255,18 +255,24 @@
                         <!-- 작성/수정 모드 -->
                         <div class="topic-info-section">
                             <div class="form-group">
+                                <label for="topicDate">날짜 *</label>
+                                <input type="date" id="topicDate" @bind="selectedTopic.TopicDate" 
+                                       class="form-control" />
+                            </div>
+
+                            <div class="form-group">
                                 <label for="topicSubject">주제 *</label>
                                 <input type="text" id="topicSubject" @bind="selectedTopic.Subject" 
                                        class="form-control" placeholder="주제를 입력하세요" />
                             </div>
                             
-                            <div class="topic-meta-readonly">
-                                <span class="topic-date">📅 @selectedTopic.CreatedAt.ToString("yyyy년 MM월 dd일")</span>
-                                @if (!string.IsNullOrEmpty(selectedTopic.Description))
-                                {
+                            @if (!string.IsNullOrEmpty(selectedTopic.Description))
+                            {
+                                <div class="form-group">
+                                    <label>설명</label>
                                     <p class="topic-description">@selectedTopic.Description</p>
-                                }
-                            </div>
+                                </div>
+                            }
                         </div>
                         
                         <EditForm Model="currentTenTen" OnValidSubmit="SaveTenTen">
@@ -420,7 +426,7 @@
         var startDate = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
         var endDate = startDate.AddMonths(1).AddDays(-1);
         
-        filteredTopics = topics.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
+        filteredTopics = topics.Where(t => t.TopicDate >= startDate && t.TopicDate <= endDate).ToList();
     }
 
     private void ShowMonthSelector()
@@ -561,38 +567,41 @@
     {
         try
         {
-            // 주제 수정이 있으면 업데이트
+            var existingTenTen = tenTens.FirstOrDefault(t => t.TopicId == currentTenTen.TopicId);
+            
+            if (existingTenTen != null)
+            {
+                // 기존 10&10 업데이트
+                var updateRequest = new MeTenTenMaui.Models.UpdateTenTenRequest
+                {
+                    Content = currentTenTen.Content,
+                };
+                await TenTenService.UpdateTenTenAsync(existingTenTen.Id, updateRequest);
+            }
+            else
+            {
+                // 새 10&10 생성
+                await TenTenService.CreateTenTenAsync(currentTenTen);
+            }
+            
+            // 주제 정보도 업데이트 (날짜 및 제목 변경 반영)
             if (selectedTopic != null)
             {
-                var updateRequest = new MeTenTenMaui.Models.UpdateTopicRequest
+                var updateTopicRequest = new MeTenTenMaui.Models.UpdateTopicRequest
                 {
                     Id = selectedTopic.Id,
                     Subject = selectedTopic.Subject,
                     Description = selectedTopic.Description,
                     TopicDate = selectedTopic.TopicDate,
-                    IsActive = true
+                    IsActive = selectedTopic.IsActive
                 };
-                await TopicService.UpdateTopicAsync(selectedTopic.Id, updateRequest);
-            }
-
-            if (isEditing)
-            {
-                var existingTenTen = tenTens.FirstOrDefault(t => t.TopicId == currentTenTen.TopicId);
-                if (existingTenTen != null)
-                {
-                    existingTenTen.Content = currentTenTen.Content;
-                    existingTenTen.EmotionTag = currentTenTen.EmotionTag;
-                    existingTenTen.ImportanceLevel = currentTenTen.ImportanceLevel;
-                    await TenTenService.UpdateTenTenAsync(existingTenTen);
-                }
-            }
-            else
-            {
-                await TenTenService.CreateTenTenAsync(currentTenTen);
+                await TopicService.UpdateTopicAsync(selectedTopic.Id, updateTopicRequest);
             }
             
             await LoadData();
+            FilterTopicsByMonth();
             CloseTenTenModal();
+            StopTimer();
         }
         catch (Exception ex)
         {

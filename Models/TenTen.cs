@@ -12,7 +12,5 @@ namespace MeTenTenMaui.Models
         public string TopicSubject { get; set; } = string.Empty;
         public bool IsReadByPartner { get; set; }
         public DateTime? ReadByPartnerAt { get; set; }
-        public string? EmotionTag { get; set; }
-        public int? ImportanceLevel { get; set; }
     }
 }

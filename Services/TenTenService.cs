@@ -125,9 +125,7 @@ namespace MeTenTenMaui.Services
                 UserName = "현재 사용자",
                 TopicId = request.TopicId,
                 TopicSubject = "새 주제", // 실제로는 Topic 서비스에서 가져와야 함
-                IsReadByPartner = false,
-                EmotionTag = request.EmotionTag,
-                ImportanceLevel = request.ImportanceLevel
+                IsReadByPartner = false
             };
 
             _tenTens.Add(tenTen);
@@ -145,8 +143,6 @@ namespace MeTenTenMaui.Services
 
             tenTen.Content = request.Content;
             tenTen.UpdatedAt = DateTime.Now;
-            tenTen.EmotionTag = request.EmotionTag;
-            tenTen.ImportanceLevel = request.ImportanceLevel;
 
             await SaveDataToFile();
             return tenTen;
@@ -162,8 +158,6 @@ namespace MeTenTenMaui.Services
 
             existingTenTen.Content = tenTen.Content;
             existingTenTen.UpdatedAt = DateTime.Now;
-            existingTenTen.EmotionTag = tenTen.EmotionTag;
-            existingTenTen.ImportanceLevel = tenTen.ImportanceLevel;
 
             await SaveDataToFile();
             return existingTenTen;

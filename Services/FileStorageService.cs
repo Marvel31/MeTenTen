@@ -39,8 +39,6 @@ namespace MeTenTenMaui.Services
                     sb.AppendLine($"TopicSubject: {item.TopicSubject}");
                     sb.AppendLine($"IsReadByPartner: {item.IsReadByPartner}");
                     sb.AppendLine($"ReadByPartnerAt: {item.ReadByPartnerAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
-                    sb.AppendLine($"EmotionTag: {item.EmotionTag ?? ""}");
-                    sb.AppendLine($"ImportanceLevel: {item.ImportanceLevel?.ToString() ?? ""}");
                     sb.AppendLine("---");
                 }
 
@@ -139,12 +137,6 @@ namespace MeTenTenMaui.Services
                         case "ReadByPartnerAt":
                             if (!string.IsNullOrEmpty(value))
                                 currentTenTen.ReadByPartnerAt = DateTime.ParseExact(value, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-                            break;
-                        case "EmotionTag":
-                            currentTenTen.EmotionTag = string.IsNullOrEmpty(value) ? null : value;
-                            break;
-                        case "ImportanceLevel":
-                            currentTenTen.ImportanceLevel = string.IsNullOrEmpty(value) ? null : int.Parse(value);
                             break;
                     }
                 }
@@ -319,8 +311,6 @@ namespace MeTenTenMaui.Services
                 sb.AppendLine($"TopicSubject: {item.TopicSubject}");
                 sb.AppendLine($"IsReadByPartner: {item.IsReadByPartner}");
                 sb.AppendLine($"ReadByPartnerAt: {item.ReadByPartnerAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}");
-                sb.AppendLine($"EmotionTag: {item.EmotionTag ?? ""}");
-                sb.AppendLine($"ImportanceLevel: {item.ImportanceLevel?.ToString() ?? ""}");
                 sb.AppendLine("---");
             }
 
@@ -454,12 +444,6 @@ namespace MeTenTenMaui.Services
                             case "ReadByPartnerAt":
                                 if (!string.IsNullOrEmpty(value))
                                     currentTenTen.ReadByPartnerAt = DateTime.ParseExact(value, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-                                break;
-                            case "EmotionTag":
-                                currentTenTen.EmotionTag = string.IsNullOrEmpty(value) ? null : value;
-                                break;
-                            case "ImportanceLevel":
-                                currentTenTen.ImportanceLevel = string.IsNullOrEmpty(value) ? null : int.Parse(value);
                                 break;
                         }
                     }
