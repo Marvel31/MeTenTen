@@ -23,33 +23,42 @@ namespace MeTenTenMaui.Services
 
         public async Task<bool> GoBackAsync()
         {
-            var currentUri = _navigationManager.Uri;
-            var baseUri = _navigationManager.BaseUri;
-            var relativePath = currentUri.Replace(baseUri, "/").TrimEnd('/');
-            
-            // 경로 정규화
-            if (string.IsNullOrEmpty(relativePath) || relativePath == "/")
+            try
             {
-                relativePath = "/";
+                var currentUri = _navigationManager.Uri;
+                var baseUri = _navigationManager.BaseUri;
+                var relativePath = currentUri.Replace(baseUri, "/").TrimEnd('/');
+                
+                // 경로 정규화
+                if (string.IsNullOrEmpty(relativePath) || relativePath == "/")
+                {
+                    relativePath = "/";
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[Navigation] Current path: {relativePath}");
+
+                // Login/SignUp 페이지에서도 종료 확인 (로그아웃 상태에서 Back 키)
+                if (relativePath.StartsWith("/login") || relativePath.StartsWith("/signup"))
+                {
+                    return await RequestExitAsync();
+                }
+
+                // Home 페이지에서 Back 키를 누르면 종료 확인
+                if (relativePath == "/" || relativePath == "")
+                {
+                    return await RequestExitAsync();
+                }
+
+                // 다른 모든 페이지에서는 Home으로 이동
+                _navigationManager.NavigateTo("/", forceLoad: false);
+                return true;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[Navigation] Current path: {relativePath}");
-
-            // Home 페이지에서 Back 키를 누르면 종료 확인
-            if (relativePath == "/" || relativePath == "")
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[Navigation] Error in GoBackAsync: {ex.Message}");
+                // 에러가 발생하면 종료 확인 다이얼로그 표시
                 return await RequestExitAsync();
             }
-
-            // Login/SignUp 페이지에서는 네비게이션 하지 않음 (기본 동작)
-            if (relativePath.StartsWith("/login") || relativePath.StartsWith("/signup"))
-            {
-                return false;
-            }
-
-            // 다른 모든 페이지에서는 Home으로 이동
-            _navigationManager.NavigateTo("/", forceLoad: false);
-            return true;
         }
 
         public async Task<bool> RequestExitAsync()
