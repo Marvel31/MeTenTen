@@ -44,51 +44,7 @@ main {
 .user-info-section {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-}
-
-.user-name {
-    color: white;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px;
-}
-
-.btn-icon {
-    background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0;
-}
-
-.btn-icon:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: white;
-    transform: scale(1.05);
-}
-
-.btn-icon:active {
-    transform: scale(0.95);
-}
-
-.btn-logout {
-    border-color: rgba(220, 53, 69, 0.5);
-}
-
-.btn-logout:hover {
-    background: rgba(220, 53, 69, 0.2);
-    border-color: #dc3545;
+    gap: 1rem;
 }
 
 .content {
@@ -110,21 +66,6 @@ main {
     
     .top-row ::deep a, .top-row ::deep .btn-link {
         margin-left: 0;
-    }
-    
-    .user-info-section {
-        gap: 0.5rem;
-    }
-    
-    .user-name {
-        font-size: 0.85rem;
-        max-width: 100px;
-    }
-    
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
     }
     
     .content {
