@@ -32,6 +32,7 @@ public static class MauiProgram
 	builder.Services.AddSingleton<IFeelingService, FeelingService>();
 	builder.Services.AddSingleton<IFeelingExampleService, FeelingExampleService>();
 	builder.Services.AddSingleton<IPrayerService, PrayerService>();
+	builder.Services.AddSingleton<INavigationService, NavigationService>();
 	
 	// Keep FileStorageService for migration/export
 	builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
