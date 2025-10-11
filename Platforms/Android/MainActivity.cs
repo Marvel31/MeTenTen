@@ -16,16 +16,22 @@ public class MainActivity : MauiAppCompatActivity
         
         if (navService != null)
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
+            // Task를 동기적으로 실행하여 기본 Back 동작을 차단
+            var task = MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                var handled = await navService.GoBackAsync();
-                if (!handled)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    base.OnBackPressed();
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
+                return await navService.GoBackAsync();
             });
+
+            // 결과를 기다림
+            task.Wait();
+            var handled = task.Result;
+
+            if (!handled)
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                base.OnBackPressed();
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
         }
         else
         {
