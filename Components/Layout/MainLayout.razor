@@ -11,9 +11,9 @@
             @if (AuthService.IsAuthenticated)
             {
                 <div class="user-info-section">
-                    <span class="user-email">👤 @AuthService.CurrentUserEmail</span>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="HandleLogout">
-                        <span class="bi bi-box-arrow-right"></span> 로그아웃
+                    <span class="user-name">👤 @(AuthService.CurrentUserName ?? "사용자")</span>
+                    <button class="btn-icon btn-logout" @onclick="HandleLogout" title="로그아웃">
+                        <span class="bi bi-box-arrow-right"></span>
                     </button>
                 </div>
             }
