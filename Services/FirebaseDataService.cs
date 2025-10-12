@@ -17,6 +17,62 @@ namespace MeTenTenMaui.Services
             _encryptionService = encryptionService;
         }
 
+        #region User DEK Management
+
+        public async Task SaveUserDEKAsync(string userId, string email, string displayName, string encryptedDEK)
+        {
+            try
+            {
+                var firebaseUser = new FirebaseUser
+                {
+                    Email = email,
+                    DisplayName = displayName,
+                    EncryptedDEK = encryptedDEK,
+                    CreatedAt = DateTime.Now.ToString("o"),
+                    UpdatedAt = DateTime.Now.ToString("o")
+                };
+
+                await _firebaseClient
+                    .Child("users")
+                    .Child(userId)
+                    .PutAsync(firebaseUser);
+
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Saved encrypted DEK for user: {userId}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Error saving user DEK: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<string?> GetUserDEKAsync(string userId)
+        {
+            try
+            {
+                var firebaseUser = await _firebaseClient
+                    .Child("users")
+                    .Child(userId)
+                    .OnceSingleAsync<FirebaseUser>();
+
+                if (firebaseUser != null && !string.IsNullOrEmpty(firebaseUser.EncryptedDEK))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Retrieved encrypted DEK for user: {userId}");
+                    return firebaseUser.EncryptedDEK;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[Firebase] No encrypted DEK found for user: {userId}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Error getting user DEK: {ex.Message}");
+                return null;
+            }
+        }
+
+        #endregion
+
         #region Topic CRUD
 
         public async Task<List<Topic>> GetTopicsAsync(string userId)

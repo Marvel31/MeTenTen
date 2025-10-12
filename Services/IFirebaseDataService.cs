@@ -4,6 +4,10 @@ namespace MeTenTenMaui.Services
 {
     public interface IFirebaseDataService
     {
+        // User DEK Management
+        Task SaveUserDEKAsync(string userId, string email, string displayName, string encryptedDEK);
+        Task<string?> GetUserDEKAsync(string userId);
+
         // Topic CRUD
         Task<List<Topic>> GetTopicsAsync(string userId);
         Task<Topic?> GetTopicByIdAsync(string userId, string topicId);

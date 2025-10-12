@@ -13,11 +13,13 @@ namespace MeTenTenMaui.Services
 
         private readonly FirebaseAuthClient _authClient;
         private readonly IEncryptionService _encryptionService;
+        private readonly IFirebaseDataService _firebaseDataService;
         private UserCredential? _userCredential;
 
-        public FirebaseAuthService(IEncryptionService encryptionService)
+        public FirebaseAuthService(IEncryptionService encryptionService, IFirebaseDataService firebaseDataService)
         {
             _encryptionService = encryptionService;
+            _firebaseDataService = firebaseDataService;
             
             var config = new FirebaseAuthConfig
             {
@@ -57,10 +59,21 @@ namespace MeTenTenMaui.Services
 
                 if (_userCredential != null)
                 {
-                    // 암호화 서비스 초기화
-                    await _encryptionService.InitializeAsync(email, password);
+                    var userId = _userCredential.User.Uid;
                     
-                    // 사용자 정보 저장
+                    // 1. 랜덤 DEK 생성
+                    var dek = await _encryptionService.GenerateRandomDEKAsync();
+                    
+                    // 2. DEK를 비밀번호로 암호화
+                    var encryptedDEK = await _encryptionService.EncryptDEKAsync(dek, email, password);
+                    
+                    // 3. 암호화된 DEK를 Firebase에 저장
+                    await _firebaseDataService.SaveUserDEKAsync(userId, email, name, encryptedDEK);
+                    
+                    // 4. DEK를 메모리에 설정 (데이터 암호화에 사용)
+                    _encryptionService.SetDEK(dek);
+                    
+                    // 5. 사용자 정보 저장
                     await SaveUserCredentials(email, name);
 
                     System.Diagnostics.Debug.WriteLine($"[Auth] 회원가입 성공: {email}");
@@ -89,8 +102,30 @@ namespace MeTenTenMaui.Services
 
                 if (_userCredential != null)
                 {
-                    // 암호화 서비스 초기화
-                    await _encryptionService.InitializeAsync(email, password);
+                    var userId = _userCredential.User.Uid;
+                    
+                    // 1. Firebase에서 암호화된 DEK 가져오기
+                    var encryptedDEK = await _firebaseDataService.GetUserDEKAsync(userId);
+                    
+                    if (string.IsNullOrEmpty(encryptedDEK))
+                    {
+                        // DEK가 없는 경우 (v1.1 이하 사용자 또는 오류)
+                        System.Diagnostics.Debug.WriteLine($"[Auth] No DEK found for user. Creating new DEK...");
+                        
+                        // 새 DEK 생성 및 저장
+                        var newDek = await _encryptionService.GenerateRandomDEKAsync();
+                        encryptedDEK = await _encryptionService.EncryptDEKAsync(newDek, email, password);
+                        await _firebaseDataService.SaveUserDEKAsync(userId, email, email, encryptedDEK);
+                        _encryptionService.SetDEK(newDek);
+                    }
+                    else
+                    {
+                        // 2. 비밀번호로 DEK 복호화
+                        var dek = await _encryptionService.DecryptDEKAsync(encryptedDEK, email, password);
+                        
+                        // 3. DEK를 메모리에 설정 (데이터 암호화/복호화에 사용)
+                        _encryptionService.SetDEK(dek);
+                    }
                     
                     await SaveUserCredentials(email, null);
 

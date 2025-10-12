@@ -7,38 +7,171 @@ namespace MeTenTenMaui.Services
 {
     public class EncryptionService : IEncryptionService
     {
-        private byte[]? _key;
+        private byte[]? _dek; // Data Encryption Key (실제 데이터 암호화에 사용)
         private const int KeySize = 256 / 8; // 32 bytes for AES-256
         private const int Iterations = 100000;
         private const string AppSalt = "MeTenTen2025";
         private const int IVSize = 16; // 128 bits for AES
 
-        public bool IsInitialized => _key != null;
+        public bool IsInitialized => _dek != null;
 
-        public Task InitializeAsync(string email, string password)
+        /// <summary>
+        /// 랜덤한 DEK 생성 (회원가입 시 1회만)
+        /// </summary>
+        public Task<byte[]> GenerateRandomDEKAsync()
         {
+            var dek = new byte[KeySize];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(dek);
+            }
+            System.Diagnostics.Debug.WriteLine($"[Encryption] Generated random DEK: {dek.Length} bytes");
+            return Task.FromResult(dek);
+        }
+
+        /// <summary>
+        /// DEK를 사용자 비밀번호로 암호화 (Firebase 저장용)
+        /// </summary>
+        public Task<string> EncryptDEKAsync(byte[] dek, string email, string password)
+        {
+            if (dek == null || dek.Length != KeySize)
+            {
+                throw new ArgumentException("Invalid DEK");
+            }
+
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
                 throw new ArgumentException("Email and password cannot be empty");
             }
 
-            // PBKDF2로 키 생성: 사용자 이메일 + 고정 앱 Salt
-            var salt = Encoding.UTF8.GetBytes(email + AppSalt);
-            
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+            try
             {
-                _key = pbkdf2.GetBytes(KeySize);
-            }
+                // 비밀번호로 암호화 키 생성 (PBKDF2)
+                var salt = Encoding.UTF8.GetBytes(email + AppSalt);
+                byte[] passwordKey;
+                
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+                {
+                    passwordKey = pbkdf2.GetBytes(KeySize);
+                }
 
-            System.Diagnostics.Debug.WriteLine($"[Encryption] Key initialized for user: {email}");
-            return Task.CompletedTask;
+                // DEK를 비밀번호 키로 암호화
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = passwordKey;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.GenerateIV();
+
+                    using (var encryptor = aes.CreateEncryptor())
+                    {
+                        var encryptedDek = encryptor.TransformFinalBlock(dek, 0, dek.Length);
+                        
+                        // IV + 암호화된 DEK 결합
+                        var result = new byte[IVSize + encryptedDek.Length];
+                        Buffer.BlockCopy(aes.IV, 0, result, 0, IVSize);
+                        Buffer.BlockCopy(encryptedDek, 0, result, IVSize, encryptedDek.Length);
+                        
+                        var base64Result = Convert.ToBase64String(result);
+                        System.Diagnostics.Debug.WriteLine($"[Encryption] DEK encrypted with password");
+                        return Task.FromResult(base64Result);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] DEK encryption error: {ex.Message}");
+                throw new InvalidOperationException("Failed to encrypt DEK", ex);
+            }
         }
 
+        /// <summary>
+        /// 암호화된 DEK를 사용자 비밀번호로 복호화 (로그인 시)
+        /// </summary>
+        public Task<byte[]> DecryptDEKAsync(string encryptedDek, string email, string password)
+        {
+            if (string.IsNullOrEmpty(encryptedDek))
+            {
+                throw new ArgumentException("Encrypted DEK cannot be empty");
+            }
+
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Email and password cannot be empty");
+            }
+
+            try
+            {
+                // 비밀번호로 암호화 키 생성 (PBKDF2)
+                var salt = Encoding.UTF8.GetBytes(email + AppSalt);
+                byte[] passwordKey;
+                
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+                {
+                    passwordKey = pbkdf2.GetBytes(KeySize);
+                }
+
+                var fullCipher = Convert.FromBase64String(encryptedDek);
+
+                if (fullCipher.Length < IVSize)
+                {
+                    throw new ArgumentException("Invalid encrypted DEK data");
+                }
+
+                // IV 추출
+                var iv = new byte[IVSize];
+                Buffer.BlockCopy(fullCipher, 0, iv, 0, IVSize);
+
+                // 암호화된 DEK 추출
+                var cipherBytes = new byte[fullCipher.Length - IVSize];
+                Buffer.BlockCopy(fullCipher, IVSize, cipherBytes, 0, cipherBytes.Length);
+
+                // DEK 복호화
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = passwordKey;
+                    aes.IV = iv;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using (var decryptor = aes.CreateDecryptor())
+                    {
+                        var decryptedDek = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
+                        System.Diagnostics.Debug.WriteLine($"[Encryption] DEK decrypted successfully");
+                        return Task.FromResult(decryptedDek);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] DEK decryption error: {ex.Message}");
+                throw new InvalidOperationException("Failed to decrypt DEK. The password may be incorrect.", ex);
+            }
+        }
+
+        /// <summary>
+        /// DEK 설정 (로그인 성공 후 호출)
+        /// </summary>
+        public void SetDEK(byte[] dek)
+        {
+            if (dek == null || dek.Length != KeySize)
+            {
+                throw new ArgumentException("Invalid DEK");
+            }
+
+            _dek = new byte[dek.Length];
+            Buffer.BlockCopy(dek, 0, _dek, 0, dek.Length);
+            System.Diagnostics.Debug.WriteLine($"[Encryption] DEK set in memory");
+        }
+
+        /// <summary>
+        /// 데이터 암호화 (DEK 사용)
+        /// </summary>
         public Task<string> EncryptAsync(string plainText)
         {
             if (!IsInitialized)
             {
-                throw new InvalidOperationException("Encryption service not initialized. Call InitializeAsync first.");
+                throw new InvalidOperationException("Encryption service not initialized. Call SetDEK first.");
             }
 
             if (string.IsNullOrEmpty(plainText))
@@ -50,7 +183,7 @@ namespace MeTenTenMaui.Services
             {
                 using (var aes = Aes.Create())
                 {
-                    aes.Key = _key!;
+                    aes.Key = _dek!;
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
                     aes.GenerateIV(); // 랜덤 IV 생성
@@ -78,11 +211,14 @@ namespace MeTenTenMaui.Services
             }
         }
 
+        /// <summary>
+        /// 데이터 복호화 (DEK 사용)
+        /// </summary>
         public Task<string> DecryptAsync(string encryptedText)
         {
             if (!IsInitialized)
             {
-                throw new InvalidOperationException("Encryption service not initialized. Call InitializeAsync first.");
+                throw new InvalidOperationException("Encryption service not initialized. Call SetDEK first.");
             }
 
             if (string.IsNullOrEmpty(encryptedText))
@@ -109,7 +245,7 @@ namespace MeTenTenMaui.Services
 
                 using (var aes = Aes.Create())
                 {
-                    aes.Key = _key!;
+                    aes.Key = _dek!;
                     aes.IV = iv;
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
@@ -126,20 +262,22 @@ namespace MeTenTenMaui.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Encryption] Decryption error: {ex.Message}");
-                throw new InvalidOperationException("Failed to decrypt data. The data may be corrupted or the password is incorrect.", ex);
+                throw new InvalidOperationException("Failed to decrypt data. The data may be corrupted or the DEK is incorrect.", ex);
             }
         }
 
+        /// <summary>
+        /// DEK를 메모리에서 안전하게 제거 (로그아웃 시)
+        /// </summary>
         public void ClearKey()
         {
-            if (_key != null)
+            if (_dek != null)
             {
-                // 보안을 위해 키를 0으로 덮어쓰기
-                Array.Clear(_key, 0, _key.Length);
-                _key = null;
-                System.Diagnostics.Debug.WriteLine("[Encryption] Key cleared from memory");
+                // 보안을 위해 DEK를 0으로 덮어쓰기
+                Array.Clear(_dek, 0, _dek.Length);
+                _dek = null;
+                System.Diagnostics.Debug.WriteLine("[Encryption] DEK cleared from memory");
             }
         }
     }
 }
-
