@@ -29,7 +29,7 @@
             readTenTens = allTenTens.Count(t => t.IsReadByPartner);
             daysActive = allTenTens.Select(t => t.CreatedAt.Date).Distinct().Count();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -50,7 +50,7 @@
                 await LoadData();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }

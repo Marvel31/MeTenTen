@@ -405,7 +405,7 @@
             tenTens = await TenTenService.GetAllTenTensAsync();
             topics = await TopicService.GetTopicsAsync(); // IsActive == true인 항목만 가져오기
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -498,7 +498,7 @@
                 CloseDeleteConfirmationModal();
                 CloseTenTenModal(); // 10&10 작성 화면도 닫기
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // 에러 처리
             }
@@ -514,7 +514,7 @@
             FilterTopicsByMonth();
             CloseNewTopicModal();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -603,7 +603,7 @@
             CloseTenTenModal();
             StopTimer();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -870,14 +870,15 @@
                 File.Copy(sourcePath, file.Path, true);
                 return file.Path;
             }
+            return null;
 #else
             // Android/iOS의 경우 Downloads 폴더에 저장
+            await Task.CompletedTask; // async 경고 제거
             var downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var destinationPath = Path.Combine(downloadsPath, fileName);
             File.Copy(sourcePath, destinationPath, true);
             return destinationPath;
 #endif
-            return null;
         }
         catch
         {

@@ -219,7 +219,7 @@
             angerExamples = allExamples.Where(e => e.Category == CategoryAnger).ToList();
             sadnessExamples = allExamples.Where(e => e.Category == CategorySadness).ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -265,7 +265,7 @@
             await LoadExamples();
             CloseAddModal();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -278,7 +278,7 @@
             await FeelingExampleService.DeleteExampleAsync(id);
             await LoadExamples();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }

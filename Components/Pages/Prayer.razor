@@ -55,7 +55,7 @@
         {
             prayers = await PrayerService.GetAllPrayersAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
@@ -81,7 +81,7 @@
             // 여기서는 간단한 알림으로 대체
             await Task.CompletedTask;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 에러 처리
         }
