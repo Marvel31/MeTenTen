@@ -6,13 +6,15 @@ namespace MeTenTenMaui.Services
     {
         private readonly IFirebaseDataService _firebaseDataService;
         private readonly IAuthService _authService;
+        private readonly IEncryptionService _encryptionService;
         private List<TenTen> _cachedTenTens = new();
         private int _nextId = 1;
 
-        public FirebaseTenTenService(IFirebaseDataService firebaseDataService, IAuthService authService)
+        public FirebaseTenTenService(IFirebaseDataService firebaseDataService, IAuthService authService, IEncryptionService encryptionService)
         {
             _firebaseDataService = firebaseDataService;
             _authService = authService;
+            _encryptionService = encryptionService;
         }
 
         public async Task<List<TenTen>> GetTenTensAsync()
@@ -23,6 +25,23 @@ namespace MeTenTenMaui.Services
             }
 
             _cachedTenTens = await _firebaseDataService.GetTenTensAsync(_authService.CurrentUserId);
+            
+            // 암호화된 데이터 복호화
+            foreach (var tenTen in _cachedTenTens)
+            {
+                if (tenTen.IsEncrypted && !string.IsNullOrEmpty(tenTen.Content))
+                {
+                    try
+                    {
+                        tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypt error for ID {tenTen.Id}: {ex.Message}");
+                        tenTen.Content = "[복호화 실패]";
+                    }
+                }
+            }
             
             // ID 재할당
             _nextId = 1;
@@ -46,7 +65,26 @@ namespace MeTenTenMaui.Services
                 return new List<TenTen>();
             }
 
-            return await _firebaseDataService.GetTenTensByTopicAsync(_authService.CurrentUserId, topicId);
+            var tenTens = await _firebaseDataService.GetTenTensByTopicAsync(_authService.CurrentUserId, topicId);
+            
+            // 암호화된 데이터 복호화
+            foreach (var tenTen in tenTens)
+            {
+                if (tenTen.IsEncrypted && !string.IsNullOrEmpty(tenTen.Content))
+                {
+                    try
+                    {
+                        tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypt error for ID {tenTen.Id}: {ex.Message}");
+                        tenTen.Content = "[복호화 실패]";
+                    }
+                }
+            }
+            
+            return tenTens;
         }
 
         public async Task<TenTen?> GetTenTenByIdAsync(int id)

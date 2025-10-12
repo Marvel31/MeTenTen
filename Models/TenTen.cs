@@ -13,5 +13,6 @@ namespace MeTenTenMaui.Models
         public string TopicSubject { get; set; } = string.Empty;
         public bool IsReadByPartner { get; set; }
         public DateTime? ReadByPartnerAt { get; set; }
+        public bool IsEncrypted { get; set; } = true; // v1.2부터는 기본 true
     }
 }

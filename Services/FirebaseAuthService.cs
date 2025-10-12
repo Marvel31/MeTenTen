@@ -12,10 +12,13 @@ namespace MeTenTenMaui.Services
         private const string UserNameKey = "firebase_user_name";
 
         private readonly FirebaseAuthClient _authClient;
+        private readonly IEncryptionService _encryptionService;
         private UserCredential? _userCredential;
 
-        public FirebaseAuthService()
+        public FirebaseAuthService(IEncryptionService encryptionService)
         {
+            _encryptionService = encryptionService;
+            
             var config = new FirebaseAuthConfig
             {
                 ApiKey = FirebaseApiKey,
@@ -54,6 +57,9 @@ namespace MeTenTenMaui.Services
 
                 if (_userCredential != null)
                 {
+                    // 암호화 서비스 초기화
+                    await _encryptionService.InitializeAsync(email, password);
+                    
                     // 사용자 정보 저장
                     await SaveUserCredentials(email, name);
 
@@ -83,6 +89,9 @@ namespace MeTenTenMaui.Services
 
                 if (_userCredential != null)
                 {
+                    // 암호화 서비스 초기화
+                    await _encryptionService.InitializeAsync(email, password);
+                    
                     await SaveUserCredentials(email, null);
 
                     System.Diagnostics.Debug.WriteLine($"[Auth] 로그인 성공: {email}");
@@ -107,6 +116,9 @@ namespace MeTenTenMaui.Services
         {
             _userCredential = null;
 
+            // 암호화 키 메모리에서 제거
+            _encryptionService.ClearKey();
+            
             // 저장된 인증 정보 삭제
             SecureStorage.Remove(TokenKey);
             SecureStorage.Remove(UserIdKey);

@@ -9,10 +9,12 @@ namespace MeTenTenMaui.Services
     {
         private const string FirebaseUrl = "https://metenten-d4a6f-default-rtdb.asia-southeast1.firebasedatabase.app/";
         private readonly FirebaseClient _firebaseClient;
+        private readonly IEncryptionService _encryptionService;
 
-        public FirebaseDataService()
+        public FirebaseDataService(IEncryptionService encryptionService)
         {
             _firebaseClient = new FirebaseClient(FirebaseUrl);
+            _encryptionService = encryptionService;
         }
 
         #region Topic CRUD
@@ -232,10 +234,14 @@ namespace MeTenTenMaui.Services
         {
             try
             {
+                // Content 암호화
+                var encryptedContent = await _encryptionService.EncryptAsync(request.Content);
+                
                 var firebaseTenTen = new FirebaseTenTen
                 {
                     TopicId = request.TopicId.ToString(),
-                    Content = request.Content,
+                    Content = encryptedContent,
+                    IsEncrypted = true,
                     CreatedAt = DateTime.Now.ToString("o")
                 };
 
@@ -247,6 +253,8 @@ namespace MeTenTenMaui.Services
                 firebaseTenTen.Id = result.Key;
 
                 var tenTen = ConvertFromFirebase(firebaseTenTen, result.Key, 0);
+                // UI 표시를 위해 복호화된 Content 반환
+                tenTen.Content = request.Content;
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Created tenten for topic {request.TopicId}");
                 return tenTen;
             }
@@ -261,9 +269,13 @@ namespace MeTenTenMaui.Services
         {
             try
             {
+                // Content 암호화
+                var encryptedContent = await _encryptionService.EncryptAsync(request.Content);
+                
                 var updates = new
                 {
-                    content = request.Content,
+                    content = encryptedContent,
+                    isEncrypted = true,
                     updatedAt = DateTime.Now.ToString("o")
                 };
 
@@ -275,6 +287,11 @@ namespace MeTenTenMaui.Services
 
                 // 업데이트된 데이터 반환
                 var updatedTenTen = await GetTenTenByIdAsync(userId, tenTenId);
+                if (updatedTenTen != null)
+                {
+                    // UI 표시를 위해 복호화된 Content 반환
+                    updatedTenTen.Content = request.Content;
+                }
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Updated tenten: {tenTenId}");
                 return updatedTenTen ?? throw new Exception("Updated TenTen not found");
             }
@@ -373,7 +390,8 @@ namespace MeTenTenMaui.Services
                 UserId = 1,
                 UserName = "현재 사용자",
                 TopicSubject = "",
-                IsReadByPartner = false
+                IsReadByPartner = false,
+                IsEncrypted = firebaseTenTen.IsEncrypted
             };
         }
 

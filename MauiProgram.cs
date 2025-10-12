@@ -22,6 +22,9 @@ public static class MauiProgram
 		System.Diagnostics.Debug.WriteLine($"[App] CacheDirectory: {FileSystem.CacheDirectory}");
 
 	// 서비스 등록
+	// Encryption Service (must be registered before Auth and Data services)
+	builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+	
 	// Firebase Services
 	builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
 	builder.Services.AddSingleton<IFirebaseDataService, FirebaseDataService>();
