@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Android.Views;
 using MeTenTenMaui.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
@@ -12,6 +13,14 @@ namespace MeTenTenMaui;
 public class MainActivity : MauiAppCompatActivity
 {
     private bool _isExitDialogShowing = false;
+
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+        
+        // 키보드가 올라올 때 화면 크기 조정
+        Window?.SetSoftInputMode(SoftInput.AdjustResize);
+    }
 
 #pragma warning disable CS0672 // Member overrides obsolete member
     public override void OnBackPressed()
