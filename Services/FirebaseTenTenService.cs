@@ -33,7 +33,20 @@ namespace MeTenTenMaui.Services
                 {
                     try
                     {
-                        tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        if (tenTen.EncryptionType == "shared" && _encryptionService.HasSharedDEK)
+                        {
+                            tenTen.Content = await _encryptionService.DecryptWithSharedDEKAsync(tenTen.Content);
+                        }
+                        else if (tenTen.EncryptionType == "shared" && !_encryptionService.HasSharedDEK)
+                        {
+                            // Shared DEK가 없는 경우 개인 DEK로 복호화 시도
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for ID {tenTen.Id}");
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        }
+                        else
+                        {
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -65,7 +78,16 @@ namespace MeTenTenMaui.Services
                 return new List<TenTen>();
             }
 
-            var tenTens = await _firebaseDataService.GetTenTensByTopicAsync(_authService.CurrentUserId, topicId);
+            // Topic의 Firebase 키를 찾기 위해 모든 Topic을 조회
+            var topics = await _firebaseDataService.GetTopicsAsync(_authService.CurrentUserId);
+            var topic = topics.FirstOrDefault(t => t.Id == topicId);
+            
+            if (topic == null || string.IsNullOrEmpty(topic.FirebaseKey))
+            {
+                return new List<TenTen>();
+            }
+
+            var tenTens = await _firebaseDataService.GetTenTensByTopicAsync(_authService.CurrentUserId, topic.FirebaseKey);
             
             // 암호화된 데이터 복호화
             foreach (var tenTen in tenTens)
@@ -74,7 +96,20 @@ namespace MeTenTenMaui.Services
                 {
                     try
                     {
-                        tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        if (tenTen.EncryptionType == "shared" && _encryptionService.HasSharedDEK)
+                        {
+                            tenTen.Content = await _encryptionService.DecryptWithSharedDEKAsync(tenTen.Content);
+                        }
+                        else if (tenTen.EncryptionType == "shared" && !_encryptionService.HasSharedDEK)
+                        {
+                            // Shared DEK가 없는 경우 개인 DEK로 복호화 시도
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for ID {tenTen.Id}");
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        }
+                        else
+                        {
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -95,12 +130,17 @@ namespace MeTenTenMaui.Services
 
         public async Task<TenTen> CreateTenTenAsync(CreateTenTenRequest request)
         {
+            return await CreateTenTenAsync(request, "personal");
+        }
+
+        public async Task<TenTen> CreateTenTenAsync(CreateTenTenRequest request, string encryptionType)
+        {
             if (string.IsNullOrEmpty(_authService.CurrentUserId))
             {
                 throw new UnauthorizedAccessException("User not authenticated");
             }
 
-            return await _firebaseDataService.CreateTenTenAsync(_authService.CurrentUserId, request);
+            return await _firebaseDataService.CreateTenTenAsync(_authService.CurrentUserId, request, encryptionType);
         }
 
         public async Task<TenTen> UpdateTenTenAsync(int id, UpdateTenTenRequest request)

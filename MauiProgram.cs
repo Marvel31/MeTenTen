@@ -30,6 +30,7 @@ public static class MauiProgram
 	builder.Services.AddSingleton<IFirebaseDataService, FirebaseDataService>();
 	builder.Services.AddSingleton<ITopicService, FirebaseTopicService>();
 	builder.Services.AddSingleton<ITenTenService, FirebaseTenTenService>();
+	builder.Services.AddSingleton<IPartnerService, PartnerService>();
 	
 	// Other Services
 	builder.Services.AddSingleton<IFeelingService, FeelingService>();

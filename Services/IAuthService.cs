@@ -6,6 +6,7 @@ namespace MeTenTenMaui.Services
         Task<(bool Success, string? ErrorMessage)> SignInAsync(string email, string password);
         Task SignOutAsync();
         Task<bool> TryAutoLoginAsync();
+        Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(string currentPassword, string newPassword);
         bool IsAuthenticated { get; }
         string? CurrentUserId { get; }
         string? CurrentUserEmail { get; }

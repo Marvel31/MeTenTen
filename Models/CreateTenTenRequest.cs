@@ -9,7 +9,7 @@ namespace MeTenTenMaui.Models
         public string Content { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "주제를 선택해주세요.")]
-        public int TopicId { get; set; }
+        public string TopicId { get; set; } = string.Empty;
     }
 }
 

@@ -19,6 +19,21 @@ namespace MeTenTenMaui.Services
         // 키 관리
         void ClearKey();
         bool IsInitialized { get; }
+        
+        // 공유 DEK 생성 (배우자 간 공유용)
+        Task<byte[]> GenerateSharedDEKAsync();
+        
+        
+        // 공유 DEK 관리
+        void SetSharedDEK(byte[] sharedDek);
+        void ClearSharedDEK();
+        bool HasSharedDEK { get; }
+        
+        // 공유 DEK로 암호화
+        Task<string> EncryptWithSharedDEKAsync(string plainText);
+        
+        // 공유 DEK로 복호화
+        Task<string> DecryptWithSharedDEKAsync(string encryptedText);
     }
 }
 

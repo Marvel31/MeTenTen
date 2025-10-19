@@ -3,7 +3,7 @@
 @using MeTenTenMaui.Services
 @inject IFeelingExampleService FeelingExampleService
 
-<PageTitle>느낌 표현 - MeTenTen</PageTitle>
+<PageTitle>느낌 표현 - ME 10&10</PageTitle>
 
 <BreadcrumbNavigator CurrentPageTitle="느낌 표현" />
 
@@ -196,7 +196,7 @@
     private List<FeelingExample> angerExamples = new();
     private List<FeelingExample> sadnessExamples = new();
     
-    private HashSet<string> expandedCategories = new() { CategoryJoy }; // 기쁨은 기본으로 펼쳐짐
+    private HashSet<string> expandedCategories = new(); // 모든 카테고리가 기본으로 닫혀있음
     private bool showAddModal = false;
     private bool isLoading = true;
     private string selectedCategory = "";

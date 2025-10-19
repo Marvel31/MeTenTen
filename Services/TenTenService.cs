@@ -59,7 +59,7 @@ namespace MeTenTenMaui.Services
                     CreatedAt = DateTime.Now.AddDays(-1),
                     UserId = 1,
                     UserName = "사용자1",
-                    TopicId = 1,
+                    TopicId = "1",
                     TopicSubject = "감사한 마음",
                     IsReadByPartner = true,
                     ReadByPartnerAt = DateTime.Now.AddDays(-1).AddHours(2)
@@ -72,7 +72,7 @@ namespace MeTenTenMaui.Services
                     CreatedAt = DateTime.Now.AddHours(-3),
                     UserId = 2,
                     UserName = "사용자2",
-                    TopicId = 1,
+                    TopicId = "1",
                     TopicSubject = "감사한 마음",
                     IsReadByPartner = false
                 });
@@ -101,7 +101,7 @@ namespace MeTenTenMaui.Services
         public async Task<List<TenTen>> GetTenTensByTopicAsync(int topicId)
         {
             await EnsureInitializedAsync();
-            var result = _tenTens.Where(t => t.TopicId == topicId).ToList();
+            var result = _tenTens.Where(t => t.TopicId == topicId.ToString()).ToList();
             return result;
         }
 
@@ -114,6 +114,11 @@ namespace MeTenTenMaui.Services
 
         public async Task<TenTen> CreateTenTenAsync(CreateTenTenRequest request)
         {
+            return await CreateTenTenAsync(request, "personal");
+        }
+
+        public async Task<TenTen> CreateTenTenAsync(CreateTenTenRequest request, string encryptionType)
+        {
             await EnsureInitializedAsync();
             
             var tenTen = new TenTen
@@ -125,7 +130,8 @@ namespace MeTenTenMaui.Services
                 UserName = "현재 사용자",
                 TopicId = request.TopicId,
                 TopicSubject = "새 주제", // 실제로는 Topic 서비스에서 가져와야 함
-                IsReadByPartner = false
+                IsReadByPartner = false,
+                EncryptionType = encryptionType
             };
 
             _tenTens.Add(tenTen);

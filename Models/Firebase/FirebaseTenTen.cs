@@ -21,6 +21,9 @@ namespace MeTenTenMaui.Models.Firebase
         
         [JsonProperty("isEncrypted")]
         public bool IsEncrypted { get; set; } = true; // v1.2부터는 기본 true
+        
+        [JsonProperty("encryptionType")]
+        public string EncryptionType { get; set; } = "personal"; // "personal" or "shared"
     }
 }
 

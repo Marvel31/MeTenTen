@@ -1,0 +1,171 @@
+@page "/partner-letter"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Services
+@using System.Linq
+@inject IPartnerService PartnerService
+@inject IFirebaseDataService FirebaseDataService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<PageTitle>배우자의 10&10 - MeTenTen</PageTitle>
+
+<div class="partner-letter-container">
+    <div class="letter-envelope">
+        <div class="letter-header">
+            <div class="sender-info">
+                <div class="sender-avatar">💕</div>
+                <div class="sender-details">
+                    <h5>@topicSubject</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="letter-date" style="position: relative; text-align: right; margin: 10px 0;">
+            <span style="color: #666; font-size: 0.9em; position: absolute; right: 0;">@FormatDate(topicCreatedAt)</span>
+        </div>
+
+        <div class="letter-content">
+            <div class="letter-body">
+                @if (tenTens.Any())
+                {
+                    @foreach (MeTenTenMaui.Models.TenTen tenTen in tenTens)
+                    {
+                        <div class="tenten-content" style="font-size: 1em; margin: 8px 0;">
+                            @tenTen.Content
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-content">
+                        <p>아직 작성된 10&10이 없습니다.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="letter-footer">
+            <div class="letter-actions">
+                <button class="btn btn-primary" @onclick="CloseLetter">
+                    <span class="bi bi-heart"></span> 닫기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string topicSubject = "";
+    private string topicDescription = "";
+    private DateTime topicCreatedAt = DateTime.Now;
+    private List<MeTenTenMaui.Models.TenTen> tenTens = new();
+    private IDisposable? tenTensSubscription;
+
+    [SupplyParameterFromQuery(Name = "topicId")]
+    public string? TopicId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(TopicId))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "토픽 정보를 찾을 수 없습니다.");
+            Navigation.NavigateTo("/partner");
+            return;
+        }
+
+        await LoadPartnerTopicAsync();
+        await StartRealTimeSync();
+    }
+
+    private async Task LoadPartnerTopicAsync()
+    {
+        try
+        {
+            // 파트너의 Topic 목록에서 해당 Topic 조회
+            var partnerTopics = await PartnerService.GetPartnerCompletedTopicsAsync();
+            var selectedTopic = partnerTopics.FirstOrDefault(t => t.FirebaseKey == TopicId);
+            
+            if (selectedTopic != null)
+            {
+                topicSubject = selectedTopic.Subject;
+                topicDescription = selectedTopic.Description ?? "";
+                topicCreatedAt = selectedTopic.TopicDate;
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "해당 토픽을 찾을 수 없습니다.");
+                Navigation.NavigateTo("/partner");
+                return;
+            }
+
+            // 해당 Topic의 TenTens 조회 (공유 DEK 사용)
+            tenTens = await PartnerService.GetPartnerTopicTenTensAsync(TopicId);
+            
+            if (!tenTens.Any())
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "해당 토픽의 10&10을 찾을 수 없습니다.");
+                Navigation.NavigateTo("/partner");
+            }
+            else
+            {
+                // CreatedAt 기준으로 정렬
+                tenTens = tenTens.OrderBy(t => t.CreatedAt).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PartnerLetter] Error loading topic: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "토픽을 불러오는 중 오류가 발생했습니다.");
+            Navigation.NavigateTo("/partner");
+        }
+    }
+
+    private void CloseLetter()
+    {
+        Navigation.NavigateTo("/partner");
+    }
+
+    private string FormatDate(DateTime date)
+    {
+        return date.ToString("yyyy년 MM월 dd일");
+    }
+
+
+    private async Task StartRealTimeSync()
+    {
+        try
+        {
+            var partnerInfo = await PartnerService.GetPartnerInfoAsync();
+            if (partnerInfo?.PartnerId != null && !string.IsNullOrEmpty(TopicId))
+            {
+                // 기존 구독 해제
+                tenTensSubscription?.Dispose();
+
+                // 새로운 구독 시작
+                tenTensSubscription = await FirebaseDataService.ObservePartnerTenTensAsync(
+                    partnerInfo.PartnerId,
+                    TopicId,
+                    (updatedTenTens) =>
+                    {
+                        InvokeAsync(async () =>
+                        {
+                            // 공유 DEK로 복호화 처리
+                            tenTens = await PartnerService.GetPartnerTopicTenTensAsync(TopicId);
+                            tenTens = tenTens.OrderBy(t => t.CreatedAt).ToList();
+                            StateHasChanged();
+                        });
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PartnerLetter] Error starting real-time sync: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        tenTensSubscription?.Dispose();
+    }
+}
+

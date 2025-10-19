@@ -1,7 +1,9 @@
 @page "/login"
 @using System.ComponentModel.DataAnnotations
+@using MeTenTenMaui.Models.Firebase
 @using MeTenTenMaui.Services
 @inject IAuthService AuthService
+@inject IPartnerService PartnerService
 @inject NavigationManager Navigation
 
 <PageTitle>로그인 - MeTenTen</PageTitle>
@@ -147,7 +149,35 @@
 
             if (success)
             {
-                Navigation.NavigateTo("/", forceLoad: true);
+                // 로그인 성공 후 잠시 대기하여 Firebase 인증이 완전히 완료되도록 함
+                await Task.Delay(500);
+                
+                // 파트너 연결 확인 (재시도 로직 포함)
+                PartnerInfo? partnerInfo = null;
+                for (int retry = 0; retry < 3; retry++)
+                {
+                    partnerInfo = await PartnerService.GetPartnerInfoAsync();
+                    if (partnerInfo != null) break;
+                    
+                    if (retry < 2)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Login] Partner info not found, retrying... ({retry + 1}/3)");
+                        await Task.Delay(1000); // 1초 대기 후 재시도
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[Login] Partner info check result: {partnerInfo != null}");
+                
+                if (partnerInfo == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Login] No partner found, redirecting to partner-invite");
+                    Navigation.NavigateTo("/partner-invite", forceLoad: true);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Login] Partner found: {partnerInfo.PartnerEmail}, redirecting to home");
+                    Navigation.NavigateTo("/", forceLoad: true);
+                }
             }
             else
             {
@@ -157,6 +187,7 @@
         catch (Exception ex)
         {
             errorMessage = "로그인 중 오류가 발생했습니다: " + ex.Message;
+            System.Diagnostics.Debug.WriteLine($"[Login] Error during login: {ex.Message}");
         }
         finally
         {

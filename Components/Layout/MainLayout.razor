@@ -6,16 +6,8 @@
 <div class="page">
     <main>
         <div class="top-row px-4">
-            <h1 class="navbar-brand">MeTenTen</h1>
+            <h1 class="navbar-brand">ME 10&10</h1>
             
-            @if (AuthService.IsAuthenticated)
-            {
-                <div class="user-info-section">
-                    <button class="btn btn-sm btn-outline-light" @onclick="HandleLogout">
-                        로그아웃
-                    </button>
-                </div>
-            }
         </div>
 
         <article class="content px-4">
@@ -25,9 +17,4 @@
 </div>
 
 @code {
-    private async Task HandleLogout()
-    {
-        await AuthService.SignOutAsync();
-        Navigation.NavigateTo("/login", forceLoad: true);
-    }
 }

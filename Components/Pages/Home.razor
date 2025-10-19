@@ -1,22 +1,49 @@
 ﻿@page "/"
+@using MeTenTenMaui.Models
+@using MeTenTenMaui.Models.Firebase
 @using MeTenTenMaui.Services
 @inject IAuthService AuthService
+@inject IPartnerService PartnerService
+@inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
-<PageTitle>홈 - MeTenTen</PageTitle>
+<PageTitle>홈 - ME 10&10</PageTitle>
 
 <div class="welcome-container">
     <div class="welcome-header">
-        <h1>💕 MeTenTen에 오신 것을 환영합니다</h1>
+        <h1>💕 ME 10&10에 오신 것을 환영합니다</h1>
         <p class="welcome-subtitle">10분간 마음을 적고 10분간 대화를 나누는 부부 소통 앱</p>
     </div>
 
     <div class="dashboard-cards">
         <div class="card">
             <div class="card-body">
-                <h3 class="card-title">💕 10&10</h3>
+                <h3 class="card-title">💕 나의 10&10 </h3>
                 <p class="card-text">10분간 마음을 적고 10분간 대화를 나누는 부부 소통의 시간입니다.</p>
-                <a href="/tenten" class="btn btn-primary">10&10 시작하기</a>
+                <div class="card-actions">
+                    <a href="/tenten" class="btn btn-primary">작성하기</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">💌 배우자 10&10 </h3>
+                <p class="card-text">배우자가 공유한 10&10을 읽어보세요.</p>
+                <div class="card-actions">
+                    @if (hasPartnerTenTen)
+                    {
+                        <button class="btn btn-primary" @onclick="ViewPartnerTenTenAsync">
+                            보기
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" disabled>
+                            보기
+                        </button>
+                    }
+                </div>
             </div>
         </div>
 
@@ -24,7 +51,9 @@
             <div class="card-body">
                 <h3 class="card-title">😊 느낌 표현</h3>
                 <p class="card-text">오늘의 감정과 느낌을 자유롭게 표현하고 공유해보세요.</p>
-                <a href="/feeling" class="btn btn-primary">느낌 표현하기</a>
+                <div class="card-actions">
+                    <a href="/feeling" class="btn btn-primary">느낌 표현하기</a>
+                </div>
             </div>
         </div>
 
@@ -32,10 +61,23 @@
             <div class="card-body">
                 <h3 class="card-title">🙏 주요 기도문</h3>
                 <p class="card-text">부부를 위한 기도문과 영적 성장을 위한 자료를 확인해보세요.</p>
-                <a href="/prayer" class="btn btn-primary">기도문 보기</a>
+                <div class="card-actions">
+                    <a href="/prayer" class="btn btn-primary">기도문 보기</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">⚙️ 설정</h3>
+                <p class="card-text">파트너 관리 및 앱 설정을 확인해보세요.</p>
+                <div class="card-actions">
+                    <a href="/settings" class="btn btn-primary">설정</a>
+                </div>
             </div>
         </div>
     </div>
+
 
     <div class="partner-info">
         <h3>💖 Marriage Encounter</h3>
@@ -45,6 +87,8 @@
 </div>
 
 @code {
+    private bool hasPartnerTenTen = false;
+
     protected override async Task OnInitializedAsync()
     {
         // 인증 체크 - 로그인하지 않은 경우 로그인 페이지로 이동
@@ -53,8 +97,55 @@
             var autoLoginSuccess = await AuthService.TryAutoLoginAsync();
             if (!autoLoginSuccess)
             {
+                System.Diagnostics.Debug.WriteLine($"[Home] Not authenticated, redirecting to login");
                 Navigation.NavigateTo("/login", forceLoad: true);
+                return;
             }
         }
+
+        System.Diagnostics.Debug.WriteLine($"[Home] User authenticated: {AuthService.CurrentUserEmail}");
+        
+        // 배우자가 연결되어 있는지 확인 (재시도 로직 포함)
+        PartnerInfo? partnerInfo = null;
+        for (int retry = 0; retry < 3; retry++)
+        {
+            partnerInfo = await PartnerService.GetPartnerInfoAsync();
+            if (partnerInfo != null) break;
+            
+            if (retry < 2)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Home] Partner info not found, retrying... ({retry + 1}/3)");
+                await Task.Delay(1000); // 1초 대기 후 재시도
+            }
+        }
+        
+        hasPartnerTenTen = partnerInfo != null;
+        
+        System.Diagnostics.Debug.WriteLine($"[Home] Partner info check result: {partnerInfo != null}");
+        if (partnerInfo != null)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Home] Partner found: {partnerInfo.PartnerEmail}");
+        }
+        
+        // 파트너가 없으면 파트너 초대 페이지로 리다이렉트
+        if (partnerInfo == null)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Home] No partner found, redirecting to partner-invite");
+            Navigation.NavigateTo("/partner-invite", forceLoad: true);
+        }
+    }
+
+
+
+    private void ViewPartnerTenTenAsync()
+    {
+        // 배우자 10&10 목록 페이지로 이동
+        Navigation.NavigateTo("/partner");
+    }
+
+    private string FormatDate(DateTime date)
+    {
+        return date.ToString("yyyy-MM-dd");
     }
 }
+

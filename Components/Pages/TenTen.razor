@@ -2,36 +2,18 @@
 @using System.Linq
 @using MeTenTenMaui.Models
 @using MeTenTenMaui.Services
+@using Microsoft.AspNetCore.Components.Web
 @inject ITenTenService TenTenService
 @inject ITopicService TopicService
 @inject IFileStorageService FileStorageService
+@inject IPartnerService PartnerService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-<PageTitle>10&10 - MeTenTen</PageTitle>
+<PageTitle>10&10 - ME 10&10</PageTitle>
 
-<BreadcrumbNavigator CurrentPageTitle="10&10">
-    <Actions>
-        <div class="settings-menu-container">
-            <button class="btn btn-secondary btn-sm settings-icon-btn" @onclick="ToggleSettingsMenu">
-                <span class="bi bi-gear"></span>
-            </button>
-            
-            @if (showSettingsMenu)
-            {
-                <div class="settings-dropdown-menu">
-                    <button class="settings-menu-item" @onclick="ExportCurrentMonth">
-                        <span class="bi bi-download"></span> 내보내기
-                    </button>
-                    <button class="settings-menu-item" @onclick="ImportData">
-                        <span class="bi bi-upload"></span> 불러오기
-                    </button>
-                </div>
-            }
-        </div>
-    </Actions>
-</BreadcrumbNavigator>
+<BreadcrumbNavigator CurrentPageTitle="10&10" />
 
 <div class="tenten-container">
     <div class="tenten-header">
@@ -153,7 +135,8 @@
                     <div class="form-group">
                         <label for="topicSubject">주제 *</label>
                         <InputText id="topicSubject" @bind-Value="newTopic.Subject" 
-                                 class="form-control" placeholder="주제를 입력하세요" />
+                                 class="form-control" placeholder="주제를 입력하세요"
+                                 @ref="topicSubjectInput" />
                         <ValidationMessage For="@(() => newTopic.Subject)" class="text-danger" />
                     </div>
 
@@ -233,20 +216,26 @@
                         </div>
                         
                         <div class="read-mode-content">
+                            @if (isReadOnlyMode)
+                            {
+                                <div class="partner-badge">
+                                    <span class="bi bi-person-heart"></span> 파트너의 10&10
+                                </div>
+                            }
                             <div class="content-display">
                                 <h4>📝 작성된 내용</h4>
                                 <div class="content-text">
-                                    @currentTenTen.Content
+                                    @(isReadOnlyMode ? sharedTenTen?.Content : currentTenTen.Content)
                                 </div>
                             </div>
                             <div class="writing-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">닫기</button>
-                                <button type="button" class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(selectedTopic)">
-                                    <span class="bi bi-trash"></span> 삭제
-                                </button>
-                                <button type="button" class="btn btn-warning" @onclick="() => EnableEditMode()">
-                                    <span class="bi bi-pencil"></span> 수정
-                                </button>
+                                @if (!isReadOnlyMode)
+                                {
+                                    <button type="button" class="btn btn-warning" @onclick="() => EnableEditMode()">
+                                        <span class="bi bi-pencil"></span> 수정
+                                    </button>
+                                }
                             </div>
                         </div>
                     }
@@ -317,9 +306,11 @@
                                 </div>
                                 <InputTextArea id="content" @bind-Value="currentTenTen.Content"
                                             class="@GetTextAreaClass()" rows="20"
-                                            placeholder="10분간 마음을 적어보세요..." />
+                                            placeholder="10분간 마음을 적어보세요..."
+                                            @ref="contentTextArea" />
                                 <ValidationMessage For="@(() => currentTenTen.Content)" class="text-danger" />
                                 <small class="form-text text-muted">최소 10자 이상 입력해주세요.</small>
+                                
                             </div>
 
                             <div class="writing-footer">
@@ -336,28 +327,6 @@
     </div>
 }
 
-<!-- 불러오기 확인 모달 -->
-@if (showImportConfirmModal)
-{
-    <div class="modal-overlay" @onclick="CancelImport">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>데이터 병합 확인</h3>
-                <button class="btn-close" @onclick="CancelImport">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>불러온 파일에 동일한 날짜의 데이터가 있습니다.</p>
-                <p><strong>@duplicateCount 개</strong>의 중복 항목이 발견되었습니다.</p>
-                <p>기존 데이터를 덮어쓰시겠습니까?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CancelImport">취소</button>
-                <button class="btn btn-danger" @onclick="ConfirmOverwrite">덮어쓰기</button>
-                <button class="btn btn-primary" @onclick="MergeWithoutOverwrite">건너뛰기</button>
-            </div>
-        </div>
-    </div>
-}
 
 @code {
     private List<MeTenTenMaui.Models.TenTen> tenTens = new();
@@ -369,20 +338,15 @@
     private bool showMonthSelectorModal = false;
     private bool showDeleteConfirmationModal = false;
     private bool showTenTenModal = false;
-    private bool showImportConfirmModal = false;
     private bool isEditing = false;
     private MeTenTenMaui.Models.Topic? selectedTopic;
     private MeTenTenMaui.Models.Topic? topicToDelete;
     private MeTenTenMaui.Models.CreateTenTenRequest currentTenTen = new();
+    private MeTenTenMaui.Models.TenTen? sharedTenTen;
     private MeTenTenMaui.Models.CreateTopicRequest newTopic = new();
     
-    // 불러오기 관련 변수
-    private List<MeTenTenMaui.Models.TenTen> importedTenTens = new();
-    private List<MeTenTenMaui.Models.Topic> importedTopics = new();
-    private int duplicateCount = 0;
     
     // 설정 메뉴 변수
-    private bool showSettingsMenu = false;
 
     // 타이머 관련 변수
     private int remainingTime = 600; // 10분 = 600초
@@ -391,10 +355,43 @@
     private DateTime timerStartTime;
     private int pausedTime = 0;
 
+    private bool hasPartner = false;
+    private bool isReadOnlyMode = false;
+    
+    // Element References for keyboard handling
+    private Microsoft.AspNetCore.Components.Forms.InputTextArea? contentTextArea;
+    private Microsoft.AspNetCore.Components.Forms.InputText? topicSubjectInput;
+
+    [SupplyParameterFromQuery(Name = "shared")]
+    public bool IsSharedMode { get; set; } = false;
+
+    [SupplyParameterFromQuery(Name = "topicId")]
+    public string? SharedTopicId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "tenTenId")]
+    public string? SharedTenTenId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
-        FilterTopicsByMonth();
+        if (IsSharedMode && !string.IsNullOrEmpty(SharedTopicId) && !string.IsNullOrEmpty(SharedTenTenId))
+        {
+            await LoadSharedTenTenAsync();
+        }
+        else
+        {
+            await LoadData();
+            FilterTopicsByMonth();
+            await CheckPartnerStatusAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // JavaScript 키보드 헬퍼 초기화
+            await JSRuntime.InvokeVoidAsync("setupAutoFocusHandlers");
+        }
     }
 
     private async Task LoadData()
@@ -402,18 +399,60 @@
         try
         {
             isLoading = true;
-            tenTens = await TenTenService.GetAllTenTensAsync();
-            topics = await TopicService.GetTopicsAsync(); // IsActive == true인 항목만 가져오기
+            StateHasChanged();
+            
+            // Topics와 TenTens를 병렬로 로드
+            var topicsTask = TopicService.GetTopicsAsync();
+            var tenTensTask = TenTenService.GetTenTensAsync();
+            
+            await Task.WhenAll(topicsTask, tenTensTask);
+            
+            topics = await topicsTask;
+            tenTens = await tenTensTask;
+            
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Loaded {topics.Count} topics and {tenTens.Count} tentens");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 에러 처리
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Error loading data: {ex.Message}");
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
     }
+
+    private async Task LoadSharedTenTenAsync()
+    {
+        // 배우자의 완료된 Topic 목록에서 해당 Topic 조회
+        var partnerTopics = await PartnerService.GetPartnerCompletedTopicsAsync();
+        var topic = partnerTopics.FirstOrDefault(t => t.FirebaseKey == SharedTopicId);
+        
+        if (topic != null)
+        {
+            // 해당 Topic의 TenTens 조회 (공유 DEK 사용)
+            var tenTens = await PartnerService.GetPartnerTopicTenTensAsync(SharedTopicId);
+            var tenTen = tenTens.FirstOrDefault(t => t.FirebaseKey == SharedTenTenId);
+            
+            if (tenTen != null)
+            {
+                selectedTopic = topic;
+                sharedTenTen = tenTen;
+                showTenTenModal = true;
+                isReadOnlyMode = true;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task CheckPartnerStatusAsync()
+    {
+        var partnerInfo = await PartnerService.GetPartnerInfoAsync();
+        hasPartner = partnerInfo != null;
+    }
+
+
 
     private void OnMonthChanged()
     {
@@ -447,14 +486,24 @@
         StateHasChanged();
     }
 
-    private void ToggleSettingsMenu()
-    {
-        showSettingsMenu = !showSettingsMenu;
-    }
 
     private bool HasTenTenForTopic(int topicId)
     {
-        return tenTens.Any(t => t.TopicId == topicId);
+        // 해당 Topic을 찾아서 Firebase Key와 int ID 모두 확인
+        var topic = topics.FirstOrDefault(t => t.Id == topicId);
+        if (topic == null) return false;
+        
+        // Firebase Key 또는 int ID로 매칭 시도
+        var hasTenTen = tenTens.Any(t => 
+            t.TopicId == topicId.ToString() || 
+            (!string.IsNullOrEmpty(topic.FirebaseKey) && t.TopicId == topic.FirebaseKey));
+            
+        System.Diagnostics.Debug.WriteLine($"[TenTen] HasTenTenForTopic({topicId}): {hasTenTen}, Topic FirebaseKey: '{topic.FirebaseKey}', Total TenTens: {tenTens.Count}");
+        foreach (var t in tenTens)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TenTen] TenTen TopicId: '{t.TopicId}', Looking for: '{topicId}' or '{topic.FirebaseKey}'");
+        }
+        return hasTenTen;
     }
 
     private void ShowNewTopicModal()
@@ -465,6 +514,10 @@
             CreatedAt = DateTime.Now
         };
         showNewTopicModal = true;
+        StateHasChanged();
+        
+        // 모달이 열린 후 입력 필드로 자동 포커스
+        _ = FocusTopicSubjectAfterDelay();
     }
 
     private void CloseNewTopicModal()
@@ -523,12 +576,17 @@
     private void SelectTopic(MeTenTenMaui.Models.Topic topic)
     {
         selectedTopic = topic;
-        var existingTenTen = tenTens.FirstOrDefault(t => t.TopicId == topic.Id);
+        // Firebase Key 또는 int ID로 매칭 시도
+        var existingTenTen = tenTens.FirstOrDefault(t => 
+            t.TopicId == topic.Id.ToString() || 
+            (!string.IsNullOrEmpty(topic.FirebaseKey) && t.TopicId == topic.FirebaseKey));
         
         if (existingTenTen != null)
         {
             // 기존 10&10이 있으면 읽기 모드
             isEditing = false;
+            isReadOnlyMode = false; // 내가 작성한 TenTen은 읽기 전용이 아님
+            sharedTenTen = existingTenTen; // 읽기 모드에서 표시할 TenTen
             currentTenTen = new MeTenTenMaui.Models.CreateTenTenRequest
             {
                 Content = existingTenTen.Content,
@@ -541,11 +599,15 @@
             isEditing = false;
             currentTenTen = new MeTenTenMaui.Models.CreateTenTenRequest
             {
-                TopicId = topic.Id
+                TopicId = !string.IsNullOrEmpty(topic.FirebaseKey) ? topic.FirebaseKey : topic.Id.ToString()
             };
         }
         
         showTenTenModal = true;
+        StateHasChanged();
+        
+        // 10&10 작성 모달이 열린 후 입력 필드로 자동 포커스
+        _ = FocusContentAfterDelay();
     }
 
     private void CloseTenTenModal()
@@ -581,7 +643,11 @@
             else
             {
                 // 새 10&10 생성
-                await TenTenService.CreateTenTenAsync(currentTenTen);
+                // 파트너가 있으면 항상 "shared", 없으면 "personal"
+                var encryptionType = hasPartner ? "shared" : "personal";
+                await TenTenService.CreateTenTenAsync(currentTenTen, encryptionType);
+                
+                System.Diagnostics.Debug.WriteLine($"[TenTen] Created new TenTen with encryption type: {encryptionType}");
             }
             
             // 주제 정보도 업데이트 (날짜 및 제목 변경 반영)
@@ -600,12 +666,14 @@
             
             await LoadData();
             FilterTopicsByMonth();
+            StateHasChanged(); // UI 상태 강제 업데이트
             CloseTenTenModal();
             StopTimer();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // 에러 처리
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Error saving TenTen: {ex.Message}");
         }
     }
 
@@ -696,194 +764,22 @@
         return selectedMonth.ToString("yyyy년 MM월");
     }
 
-    // 내보내기
-    private async Task ExportCurrentMonth()
+
+
+
+
+
+
+    private async Task FocusContentAfterDelay()
     {
-        showSettingsMenu = false; // 메뉴 닫기
-        
-        try
-        {
-            var year = selectedMonth.Year;
-            var month = selectedMonth.Month;
-            
-            // 현재 월의 데이터 필터링
-            var startDate = new DateTime(year, month, 1);
-            var endDate = startDate.AddMonths(1).AddDays(-1);
-            
-            var monthTenTens = tenTens.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
-            var monthTopics = topics.Where(t => t.CreatedAt >= startDate && t.CreatedAt <= endDate).ToList();
-            
-            // 파일로 내보내기
-            var exportPath = await FileStorageService.ExportMonthDataAsync(year, month, monthTenTens, monthTopics);
-            
-            // 사용자가 선택한 위치로 파일 저장
-            var fileName = $"tenten_{year:0000}_{month:00}.txt";
-            var result = await SaveFileAsync(fileName, exportPath);
-            
-            if (result != null)
-            {
-                await JSRuntime.InvokeVoidAsync("alert", $"{year}년 {month}월 데이터를 {result}에 저장했습니다.");
-            }
-            else
-            {
-                await JSRuntime.InvokeVoidAsync("alert", "파일 저장을 취소했습니다.");
-            }
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"내보내기 실패: {ex.Message}");
-        }
+        await Task.Delay(300); // 모달 애니메이션 완료 대기
+        await JSRuntime.InvokeVoidAsync("focusInputInModal", "content");
     }
 
-    // 불러오기
-    private async Task ImportData()
+    private async Task FocusTopicSubjectAfterDelay()
     {
-        showSettingsMenu = false; // 메뉴 닫기
-        
-        try
-        {
-            var result = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "10&10 데이터 파일 선택",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.WinUI, new[] { ".txt" } },
-                    { DevicePlatform.Android, new[] { "text/plain" } },
-                    { DevicePlatform.iOS, new[] { "public.text" } }
-                })
-            });
-            
-            if (result != null)
-            {
-                var (loadedTenTens, loadedTopics) = await FileStorageService.ImportDataAsync(result.FullPath);
-                
-                importedTenTens = loadedTenTens;
-                importedTopics = loadedTopics;
-                
-                // 중복 체크
-                var duplicateTenTens = tenTens.Count(t => importedTenTens.Any(i => 
-                    i.CreatedAt.Date == t.CreatedAt.Date && i.TopicId == t.TopicId));
-                var duplicateTopics = topics.Count(t => importedTopics.Any(i => 
-                    i.CreatedAt.Date == t.CreatedAt.Date));
-                
-                duplicateCount = duplicateTenTens + duplicateTopics;
-                
-                if (duplicateCount > 0)
-                {
-                    showImportConfirmModal = true;
-                }
-                else
-                {
-                    await MergeWithoutOverwrite();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"불러오기 실패: {ex.Message}");
-        }
-    }
-
-    // 덮어쓰기
-    private async Task ConfirmOverwrite()
-    {
-        try
-        {
-            // 기존 데이터에서 중복 제거
-            tenTens.RemoveAll(t => importedTenTens.Any(i => 
-                i.CreatedAt.Date == t.CreatedAt.Date && i.TopicId == t.TopicId));
-            topics.RemoveAll(t => importedTopics.Any(i => 
-                i.CreatedAt.Date == t.CreatedAt.Date));
-            
-            // 새 데이터 추가
-            tenTens.AddRange(importedTenTens);
-            topics.AddRange(importedTopics);
-            
-            await LoadData();
-            FilterTopicsByMonth();
-            
-            showImportConfirmModal = false;
-            await JSRuntime.InvokeVoidAsync("alert", "데이터를 성공적으로 불러왔습니다.");
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"병합 실패: {ex.Message}");
-        }
-    }
-
-    // 중복 건너뛰기
-    private async Task MergeWithoutOverwrite()
-    {
-        try
-        {
-            // 중복되지 않는 항목만 추가
-            var newTenTens = importedTenTens.Where(i => !tenTens.Any(t => 
-                t.CreatedAt.Date == i.CreatedAt.Date && t.TopicId == i.TopicId)).ToList();
-            var newTopics = importedTopics.Where(i => !topics.Any(t => 
-                t.CreatedAt.Date == i.CreatedAt.Date)).ToList();
-            
-            tenTens.AddRange(newTenTens);
-            topics.AddRange(newTopics);
-            
-            await LoadData();
-            FilterTopicsByMonth();
-            
-            showImportConfirmModal = false;
-            await JSRuntime.InvokeVoidAsync("alert", $"중복을 제외한 데이터를 불러왔습니다. (추가: {newTenTens.Count + newTopics.Count}개)");
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"병합 실패: {ex.Message}");
-        }
-    }
-
-    // 불러오기 취소
-    private void CancelImport()
-    {
-        showImportConfirmModal = false;
-        importedTenTens.Clear();
-        importedTopics.Clear();
-        duplicateCount = 0;
-    }
-
-    // 파일 저장 헬퍼
-    private async Task<string?> SaveFileAsync(string fileName, string sourcePath)
-    {
-        try
-        {
-#if WINDOWS
-            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
-            var window = Application.Current?.Windows[0]?.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
-            if (window != null)
-            {
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
-            }
-            
-            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-            savePicker.SuggestedFileName = fileName;
-            savePicker.FileTypeChoices.Add("텍스트 파일", new List<string>() { ".txt" });
-            
-            var file = await savePicker.PickSaveFileAsync();
-            if (file != null)
-            {
-                File.Copy(sourcePath, file.Path, true);
-                return file.Path;
-            }
-            return null;
-#else
-            // Android/iOS의 경우 Downloads 폴더에 저장
-            await Task.CompletedTask; // async 경고 제거
-            var downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var destinationPath = Path.Combine(downloadsPath, fileName);
-            File.Copy(sourcePath, destinationPath, true);
-            return destinationPath;
-#endif
-        }
-        catch
-        {
-            return null;
-        }
+        await Task.Delay(300); // 모달 애니메이션 완료 대기
+        await JSRuntime.InvokeVoidAsync("focusInputInModal", "topicSubject");
     }
 
     public void Dispose()

@@ -125,11 +125,19 @@ namespace MeTenTenMaui.Services
                         
                         // 3. DEK를 메모리에 설정 (데이터 암호화/복호화에 사용)
                         _encryptionService.SetDEK(dek);
+                        
+                        // 4. Pending shared DEK 확인 및 처리
+                        await ProcessPendingSharedDEKAsync(userId, email, password);
+                        
+                        // 5. 파트너가 있으면 공유 DEK 로드
+                        await LoadSharedDEKIfPartnerExists(userId, email, password);
                     }
                     
                     await SaveUserCredentials(email, null);
 
                     System.Diagnostics.Debug.WriteLine($"[Auth] 로그인 성공: {email}");
+                    System.Diagnostics.Debug.WriteLine($"[Auth] CurrentUserId after login: {CurrentUserId}");
+                    System.Diagnostics.Debug.WriteLine($"[Auth] IsAuthenticated after login: {IsAuthenticated}");
                     return (true, null);
                 }
 
@@ -208,6 +216,129 @@ namespace MeTenTenMaui.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Auth] 인증 정보 저장 실패: {ex.Message}");
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(string currentPassword, string newPassword)
+        {
+            try
+            {
+                if (_userCredential == null)
+                {
+                    return (false, "로그인이 필요합니다.");
+                }
+
+                var user = _userCredential.User;
+                var email = user.Info.Email;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return (false, "사용자 이메일을 찾을 수 없습니다.");
+                }
+
+                // 1. 현재 비밀번호로 재인증
+                try
+                {
+                    await _authClient.SignInWithEmailAndPasswordAsync(email, currentPassword);
+                }
+                catch (FirebaseAuthException ex)
+                {
+                    return (false, "현재 비밀번호가 올바르지 않습니다.");
+                }
+
+                // 2. 새 비밀번호로 변경
+                await user.ChangePasswordAsync(newPassword);
+
+                // 3. DEK를 새 비밀번호로 재암호화
+                var userId = user.Uid;
+                var encryptedDEK = await _firebaseDataService.GetUserDEKAsync(userId);
+                
+                if (!string.IsNullOrEmpty(encryptedDEK))
+                {
+                    // 기존 DEK를 현재 비밀번호로 복호화
+                    var dek = await _encryptionService.DecryptDEKAsync(encryptedDEK, email, currentPassword);
+                    
+                    // 새 비밀번호로 재암호화
+                    var newEncryptedDEK = await _encryptionService.EncryptDEKAsync(dek, email, newPassword);
+                    
+                    // Firebase에 업데이트
+                    await _firebaseDataService.SaveUserDEKAsync(userId, email, CurrentUserName ?? email, newEncryptedDEK);
+                    
+                    // 메모리의 DEK도 업데이트
+                    _encryptionService.SetDEK(dek);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[Auth] 비밀번호 변경 성공: {email}");
+                return (true, null);
+            }
+            catch (FirebaseAuthException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Auth] 비밀번호 변경 실패: {ex.Message}");
+                return (false, GetErrorMessage(ex));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Auth] 비밀번호 변경 오류: {ex.Message}");
+                return (false, "비밀번호 변경 중 오류가 발생했습니다.");
+            }
+        }
+
+        private async Task LoadSharedDEKIfPartnerExists(string userId, string email, string password)
+        {
+            try
+            {
+                // 파트너 정보 조회
+                var user = await _firebaseDataService.GetUserAsync(userId);
+                if (user?.Partner != null && !string.IsNullOrEmpty(user.Partner.EncryptedSharedDEK))
+                {
+                    // 공유 DEK 복호화
+                    var sharedDek = await _encryptionService.DecryptDEKAsync(
+                        user.Partner.EncryptedSharedDEK, 
+                        email, 
+                        password);
+                    
+                    // 공유 DEK를 메모리에 설정
+                    _encryptionService.SetSharedDEK(sharedDek);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[Auth] Shared DEK loaded for user: {email}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Auth] Failed to load shared DEK: {ex.Message}");
+                // 공유 DEK 로드 실패는 로그인을 중단시키지 않음
+            }
+        }
+
+        private async Task ProcessPendingSharedDEKAsync(string userId, string email, string password)
+        {
+            try
+            {
+                // Pending shared DEK 확인 (파트너가 초대한 경우)
+                var pendingDEK = await _firebaseDataService.GetPendingSharedDEKAsync(userId);
+                if (pendingDEK != null)
+                {
+                    // 내 비밀번호로 암호화해서 저장
+                    var encryptedForMe = await _encryptionService.EncryptDEKAsync(
+                        pendingDEK, email, password);
+                    
+                    // 내 계정에 저장
+                    await _firebaseDataService.UpdatePartnerSharedDEKAsync(
+                        userId, encryptedForMe);
+                    
+                    // Pending DEK 삭제
+                    await _firebaseDataService.DeletePendingSharedDEKAsync(userId);
+                    
+                    // 메모리에 로드
+                    _encryptionService.SetSharedDEK(pendingDEK);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[Auth] Processed pending shared DEK for user: {email}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Auth] Error processing pending shared DEK: {ex.Message}");
+                // Pending DEK 처리 실패는 로그인을 중단시키지 않음
             }
         }
 

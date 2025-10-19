@@ -1,0 +1,199 @@
+@page "/partner-invite"
+@using System.ComponentModel.DataAnnotations
+@using MeTenTenMaui.Services
+@inject IAuthService AuthService
+@inject IPartnerService PartnerService
+@inject NavigationManager Navigation
+
+<PageTitle>파트너 연결 - MeTenTen</PageTitle>
+
+<div class="partner-invite-container">
+    <div class="partner-invite-card">
+        <div class="partner-invite-header">
+            <h1>💕 파트너와 연결하기</h1>
+            <p>MeTenTen을 사용하려면 배우자와 연결되어야 합니다.</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">
+                @errorMessage
+            </div>
+        }
+
+        <EditForm Model="inviteModel" OnValidSubmit="HandleInvitePartner">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="partnerEmail">배우자 이메일</label>
+                <InputText id="partnerEmail" @bind-Value="inviteModel.PartnerEmail" 
+                          class="form-control" placeholder="partner@example.com" />
+                <ValidationMessage For="@(() => inviteModel.PartnerEmail)" class="text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label for="myPassword">내 비밀번호</label>
+                <InputText id="myPassword" @bind-Value="inviteModel.MyPassword" 
+                          type="password" class="form-control" placeholder="내 비밀번호" />
+                <ValidationMessage For="@(() => inviteModel.MyPassword)" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span>초대 중...</span>
+                }
+                else
+                {
+                    <span>파트너 초대하기</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="partner-invite-footer">
+            <p>다른 계정으로 로그인하시겠습니까?</p>
+            <button class="btn btn-outline-secondary" @onclick="SignOut">
+                로그아웃
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .partner-invite-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+
+    .partner-invite-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 100%;
+    }
+
+    .partner-invite-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .partner-invite-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #667eea;
+    }
+
+    .partner-invite-header p {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1rem;
+        margin-top: 10px;
+    }
+
+    .partner-invite-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .partner-invite-footer p {
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+
+    .alert {
+        margin-bottom: 20px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+
+@code {
+    private PartnerInviteModel inviteModel = new();
+    private string? errorMessage;
+    private bool isLoading = false;
+
+    private async Task HandleInvitePartner()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var (success, message) = await PartnerService.InvitePartnerAsync(
+                inviteModel.PartnerEmail, inviteModel.MyPassword);
+
+            if (success)
+            {
+                // 파트너 초대 성공 후 잠시 대기하여 Firebase에 데이터가 저장되도록 함
+                await Task.Delay(1000);
+                System.Diagnostics.Debug.WriteLine($"[PartnerInvite] Partner invitation successful, redirecting to home");
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = message ?? "파트너 초대에 실패했습니다.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "파트너 초대 중 오류가 발생했습니다: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SignOut()
+    {
+        await AuthService.SignOutAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    public class PartnerInviteModel
+    {
+        [Required(ErrorMessage = "배우자 이메일을 입력해주세요.")]
+        [EmailAddress(ErrorMessage = "올바른 이메일 형식이 아닙니다.")]
+        public string PartnerEmail { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "비밀번호를 입력해주세요.")]
+        public string MyPassword { get; set; } = string.Empty;
+    }
+}

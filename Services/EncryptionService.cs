@@ -7,13 +7,15 @@ namespace MeTenTenMaui.Services
 {
     public class EncryptionService : IEncryptionService
     {
-        private byte[]? _dek; // Data Encryption Key (실제 데이터 암호화에 사용)
+        private byte[]? _dek;
+        private byte[]? _sharedDek; // Data Encryption Key (실제 데이터 암호화에 사용)
         private const int KeySize = 256 / 8; // 32 bytes for AES-256
         private const int Iterations = 100000;
         private const string AppSalt = "MeTenTen2025";
         private const int IVSize = 16; // 128 bits for AES
 
         public bool IsInitialized => _dek != null;
+        public bool HasSharedDEK => _sharedDek != null;
 
         /// <summary>
         /// 랜덤한 DEK 생성 (회원가입 시 1회만)
@@ -277,6 +279,126 @@ namespace MeTenTenMaui.Services
                 Array.Clear(_dek, 0, _dek.Length);
                 _dek = null;
                 System.Diagnostics.Debug.WriteLine("[Encryption] DEK cleared from memory");
+            }
+        }
+
+
+        public async Task<byte[]> GenerateSharedDEKAsync()
+        {
+            return await GenerateRandomDEKAsync();
+        }
+
+
+        public void SetSharedDEK(byte[] sharedDek)
+        {
+            if (sharedDek == null || sharedDek.Length != KeySize)
+            {
+                throw new ArgumentException("Invalid shared DEK");
+            }
+
+            _sharedDek = new byte[sharedDek.Length];
+            Buffer.BlockCopy(sharedDek, 0, _sharedDek, 0, sharedDek.Length);
+            System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK set in memory");
+        }
+
+        public void ClearSharedDEK()
+        {
+            if (_sharedDek != null)
+            {
+                Array.Clear(_sharedDek, 0, _sharedDek.Length);
+                _sharedDek = null;
+            }
+            System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK cleared from memory");
+        }
+
+        public async Task<string> EncryptWithSharedDEKAsync(string plainText)
+        {
+            if (!HasSharedDEK)
+            {
+                throw new InvalidOperationException("Shared DEK not initialized. Call SetSharedDEK first.");
+            }
+
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = _sharedDek!;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.GenerateIV(); // 랜덤 IV 생성
+
+                    using (var encryptor = aes.CreateEncryptor())
+                    using (var msEncrypt = new MemoryStream())
+                    {
+                        // IV를 앞에 추가
+                        msEncrypt.Write(aes.IV, 0, aes.IV.Length);
+
+                        using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                        using (var swEncrypt = new StreamWriter(csEncrypt))
+                        {
+                            await swEncrypt.WriteAsync(plainText);
+                        }
+
+                        return Convert.ToBase64String(msEncrypt.ToArray());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Error encrypting with shared DEK: {ex.Message}");
+                throw new InvalidOperationException("Failed to encrypt with shared DEK", ex);
+            }
+        }
+
+        public async Task<string> DecryptWithSharedDEKAsync(string encryptedText)
+        {
+            if (!HasSharedDEK)
+            {
+                throw new InvalidOperationException("Shared DEK not initialized. Call SetSharedDEK first.");
+            }
+
+            if (string.IsNullOrEmpty(encryptedText))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var cipherBytes = Convert.FromBase64String(encryptedText);
+
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = _sharedDek!;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    // IV 추출 (처음 16바이트)
+                    var iv = new byte[16];
+                    Array.Copy(cipherBytes, 0, iv, 0, 16);
+                    aes.IV = iv;
+
+                    // 암호화된 데이터 추출 (IV 이후부터)
+                    var encryptedData = new byte[cipherBytes.Length - 16];
+                    Array.Copy(cipherBytes, 16, encryptedData, 0, encryptedData.Length);
+
+                    using (var decryptor = aes.CreateDecryptor())
+                    using (var msDecrypt = new MemoryStream(encryptedData))
+                    using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    using (var srDecrypt = new StreamReader(csDecrypt))
+                    {
+                        return await srDecrypt.ReadToEndAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Error decrypting with shared DEK: {ex.Message}");
+                throw new InvalidOperationException("Failed to decrypt with shared DEK", ex);
             }
         }
     }

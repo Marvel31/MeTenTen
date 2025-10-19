@@ -18,6 +18,9 @@ namespace MeTenTenMaui.Models.Firebase
         
         [JsonProperty("updatedAt")]
         public string? UpdatedAt { get; set; }
+        
+        [JsonProperty("partner")]
+        public PartnerInfo? Partner { get; set; }
     }
 }
 

@@ -126,7 +126,7 @@ namespace MeTenTenMaui.Services
                             currentTenTen.UserName = value;
                             break;
                         case "TopicId":
-                            currentTenTen.TopicId = int.Parse(value);
+                            currentTenTen.TopicId = value;
                             break;
                         case "TopicSubject":
                             currentTenTen.TopicSubject = value;
@@ -433,7 +433,7 @@ namespace MeTenTenMaui.Services
                                 currentTenTen.UserName = value;
                                 break;
                             case "TopicId":
-                                currentTenTen.TopicId = int.Parse(value);
+                                currentTenTen.TopicId = value;
                                 break;
                             case "TopicSubject":
                                 currentTenTen.TopicSubject = value;

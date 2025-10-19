@@ -1,33 +1,37 @@
 @page "/partner"
 @using MeTenTenMaui.Models
 @using MeTenTenMaui.Services
-@inject ITenTenService TenTenService
+@inject IPartnerService PartnerService
 @inject ITopicService TopicService
+@inject IFirebaseDataService FirebaseDataService
+@inject NavigationManager Navigation
 
 @code {
-    private List<MeTenTenMaui.Models.TenTen> allTenTens = new();
-    private List<MeTenTenMaui.Models.TenTen> recentTenTens = new();
+    private List<Topic> partnerTopics = new();
     private bool isLoading = true;
-    private int totalTenTens = 0;
-    private int readTenTens = 0;
-    private int daysActive = 0;
+    private string? partnerDisplayName;
+    private IDisposable? topicsSubscription;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        await LoadPartnerTopics();
+        await StartRealTimeSync();
     }
 
-    private async Task LoadData()
+    private async Task LoadPartnerTopics()
     {
         isLoading = true;
         try
         {
-            allTenTens = await TenTenService.GetTenTensAsync();
-            recentTenTens = allTenTens.OrderByDescending(t => t.CreatedAt).ToList();
-            
-            totalTenTens = allTenTens.Count;
-            readTenTens = allTenTens.Count(t => t.IsReadByPartner);
-            daysActive = allTenTens.Select(t => t.CreatedAt.Date).Distinct().Count();
+            // 파트너 정보 조회
+            var partnerInfo = await PartnerService.GetPartnerInfoAsync();
+            if (partnerInfo != null)
+            {
+                partnerDisplayName = partnerInfo.PartnerDisplayName;
+            }
+
+            // 배우자가 작성 완료한 Topic 목록 조회
+            partnerTopics = await PartnerService.GetPartnerCompletedTopicsAsync();
         }
         catch (Exception)
         {
@@ -40,32 +44,65 @@
         }
     }
 
-    private async Task MarkAsRead(int id)
+    private void ViewTopic(Topic topic)
+    {
+        Navigation.NavigateTo($"/partner-letter?topicId={topic.FirebaseKey}");
+    }
+
+    private async Task RefreshTopics()
+    {
+        await LoadPartnerTopics();
+    }
+
+    private async Task StartRealTimeSync()
     {
         try
         {
-            var success = await TenTenService.MarkAsReadAsync(id);
-            if (success)
+            var partnerInfo = await PartnerService.GetPartnerInfoAsync();
+            if (partnerInfo?.PartnerId != null)
             {
-                await LoadData();
+                // 기존 구독 해제
+                topicsSubscription?.Dispose();
+
+                // 새로운 구독 시작
+                topicsSubscription = await FirebaseDataService.ObservePartnerTopicsAsync(
+                    partnerInfo.PartnerId,
+                    (updatedTopics) =>
+                    {
+                        InvokeAsync(() =>
+                        {
+                            partnerTopics = updatedTopics;
+                            StateHasChanged();
+                        });
+                    });
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 에러 처리
+            System.Diagnostics.Debug.WriteLine($"[Partner] Error starting real-time sync: {ex.Message}");
         }
+    }
+
+    public void Dispose()
+    {
+        topicsSubscription?.Dispose();
     }
 }
 
-<PageTitle>파트너 - MeTenTen</PageTitle>
+<PageTitle>배우자 10&10 - MeTenTen</PageTitle>
 
-<BreadcrumbNavigator CurrentPageTitle="파트너" />
+<BreadcrumbNavigator CurrentPageTitle="배우자 10&10" />
 
 <div class="partner-container">
     
     <div class="partner-header">
-        <h1>👥 파트너</h1>
-        <p>부부 간의 소통 기록을 확인하고 서로의 마음을 나누어보세요.</p>
+        <h1>💕 배우자 10&10</h1>
+        <p>배우자가 작성한 10&10을 확인하고 마음을 나누어보세요.</p>
+        <div class="header-actions">
+            <button class="btn btn-outline-primary btn-sm" @onclick="RefreshTopics">
+                <span class="bi bi-arrow-clockwise"></span> 새로고침
+            </button>
+        </div>
     </div>
 
     @if (isLoading)
@@ -78,65 +115,23 @@
     }
     else
     {
-        <div class="partner-stats">
-            <div class="stat-card">
-                <div class="stat-icon">📝</div>
-                <div class="stat-content">
-                    <h3>@totalTenTens</h3>
-                    <p>총 10&10 수</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💖</div>
-                <div class="stat-content">
-                    <h3>@readTenTens</h3>
-                    <p>읽은 10&10</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📅</div>
-                <div class="stat-content">
-                    <h3>@daysActive</h3>
-                    <p>활동 일수</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="recent-tenTens">
-            <h2>최근 10&10</h2>
-            @if (recentTenTens.Any())
+        <div class="topics-list">
+            <h3>📋 배우자의 주제 목록</h3>
+            @if (partnerTopics.Any())
             {
-                <div class="tenten-list">
-                    @foreach (var tenTen in recentTenTens.Take(5))
+                <div class="topics-table">
+                    @foreach (var topic in partnerTopics.OrderByDescending(t => t.TopicDate))
                     {
-                        <div class="tenten-card @(tenTen.IsReadByPartner ? "read" : "unread")">
-                            <div class="tenten-header">
-                                <div class="tenten-meta">
-                                    <span class="topic-badge">@tenTen.TopicSubject</span>
-                                    <span class="date-info">작성일: @tenTen.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                        <div class="topic-list-item" @onclick="() => ViewTopic(topic)">
+                            <div class="topic-content">
+                                <div class="topic-subject-line">
+                                    <h5>@topic.Subject</h5>
                                 </div>
-                                <div class="tenten-actions">
-                                    @if (!tenTen.IsReadByPartner)
-                                    {
-                                        <button class="btn btn-sm btn-success" @onclick="() => MarkAsRead(tenTen.Id)" title="읽음으로 표시">
-                                            <span class="bi bi-check-circle"></span> 읽음
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                            <div class="tenten-content">
-                                <p>@(tenTen.Content.Length > 100 ? tenTen.Content.Substring(0, 100) + "..." : tenTen.Content)</p>
-                            </div>
-                            <div class="tenten-footer">
-                                <div class="read-status">
-                                    @if (tenTen.IsReadByPartner)
-                                    {
-                                        <span class="badge bg-success">읽음</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning">읽지 않음</span>
-                                    }
+                                <div class="topic-meta-line">
+                                    <div>
+                                        <span class="topic-date">@topic.TopicDate.ToString("yyyy년 MM월 dd일")</span>
+                                        <span class="status-badge completed">작성완료</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -147,9 +142,8 @@
             {
                 <div class="empty-state">
                     <div class="empty-icon">💌</div>
-                    <h3>아직 10&10이 없습니다</h3>
-                    <p>첫 번째 10&10을 작성해보세요.</p>
-                    <a href="/tenten" class="btn btn-primary">10&10 작성하기</a>
+                    <h3>아직 작성된 10&10이 없습니다</h3>
+                    <p>배우자가 10&10을 작성하면 여기에서 확인할 수 있습니다.</p>
                 </div>
             }
         </div>

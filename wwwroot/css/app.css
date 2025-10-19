@@ -2,6 +2,233 @@
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* Partner Page Styles */
+.partner-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.partner-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.partner-header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.partner-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.partner-topics h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.topic-list {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.topic-card {
+    background: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.topic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.topic-meta h3 {
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.topic-description {
+    color: #7f8c8d;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.date-info {
+    color: #95a5a6;
+    font-size: 12px;
+}
+
+.topic-actions .btn {
+    white-space: nowrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+}
+
+/* Partner Letter Styles */
+.partner-letter-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.letter-envelope {
+    background: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.letter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.sender-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sender-avatar {
+    font-size: 32px;
+}
+
+.sender-details h2 {
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+    font-size: 20px;
+}
+
+.sender-relationship {
+    color: #7f8c8d;
+    margin: 0;
+    font-size: 14px;
+}
+
+.letter-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.letter-content {
+    margin-bottom: 30px;
+}
+
+.letter-subject h3 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+.topic-description {
+    color: #7f8c8d;
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.letter-body {
+    margin-top: 20px;
+}
+
+.tenten-letter {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.tenten-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.tenten-content {
+    color: #2c3e50;
+    line-height: 1.6;
+    font-size: 16px;
+    white-space: pre-wrap;
+}
+
+.empty-content {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.letter-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #e1e8ed;
+}
+
+.letter-signature p {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+.signature-name {
+    font-weight: 600;
+    color: #2c3e50 !important;
+}
+
+.letter-actions .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Layout Styles */
 .page {
     display: flex;
@@ -2578,4 +2805,296 @@ h1:focus {
     color: #333;
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+/* Partner Topic Sharing Styles */
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.card-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+.partner-password-section {
+    margin: 15px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.partner-password-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.partner-password-section input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.partner-password-section .text-success {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.partner-badge {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #e7f3ff;
+    color: #0066cc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.partner-badge .bi {
+    margin-right: 5px;
+}
+
+/* 파트너 편지 화면 스타일 */
+.partner-letter-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.letter-envelope {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.letter-envelope::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e8e, #ff6b6b);
+}
+
+.letter-header {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    color: white;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sender-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sender-avatar {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.sender-details h2 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.sender-relationship {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.letter-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    font-weight: 500;
+}
+
+.date-icon {
+    font-size: 1.2rem;
+}
+
+.date-text {
+    font-size: 1rem;
+}
+
+.letter-content {
+    padding: 1rem;
+    background: #fefefe;
+    min-height: 400px;
+}
+
+.letter-subject {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #ff6b6b;
+}
+
+.letter-subject h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.letter-body {
+    margin-bottom: 2rem;
+}
+
+.letter-text {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 2rem;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: #333;
+    white-space: pre-wrap;
+    min-height: 200px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.letter-footer {
+    background: #f8f9fa;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+.letter-signature {
+    color: #666;
+    font-style: italic;
+}
+
+.letter-signature p {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+
+.signature-name {
+    font-weight: 600;
+    color: #ff6b6b;
+    font-size: 1.1rem;
+}
+
+.letter-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.letter-actions .btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.letter-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .partner-letter-container {
+        padding: 1rem;
+    }
+    
+    .letter-envelope {
+        border-radius: 15px;
+    }
+    
+    .letter-header {
+        padding: 1.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .sender-info {
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .sender-avatar {
+        font-size: 2.5rem;
+        width: 60px;
+        height: 60px;
+    }
+    
+    .sender-details h2 {
+        font-size: 1.3rem;
+    }
+    
+    .letter-date {
+        justify-content: center;
+    }
+    
+    .letter-content {
+        padding: 1.5rem;
+    }
+    
+    .letter-subject h3 {
+        font-size: 1.2rem;
+    }
+    
+    .letter-text {
+        padding: 1.5rem;
+        font-size: 1rem;
+        min-height: 150px;
+    }
+    
+    .letter-footer {
+        padding: 1.5rem;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .letter-actions .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
 }
