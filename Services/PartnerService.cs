@@ -45,24 +45,24 @@ namespace MeTenTenMaui.Services
                     return (false, "자신의 이메일은 입력할 수 없습니다.");
                 }
 
-                // 파트너 이메일로 사용자 검색 (사용자 ID 포함)
+                // 배우자 이메일로 사용자 검색 (사용자 ID 포함)
                 var (partnerUser, partnerUserId) = await _firebaseDataService.GetUserWithIdByEmailAsync(partnerEmail);
                 if (partnerUser == null || partnerUserId == null)
                 {
                     return (false, "해당 이메일로 가입된 사용자를 찾을 수 없습니다.");
                 }
 
-                // 이미 파트너가 있는지 확인
+                // 이미 배우자가 있는지 확인
                 var currentUser = await _firebaseDataService.GetUserByEmailAsync(_currentUserEmail);
                 if (currentUser?.Partner != null)
                 {
-                    return (false, "이미 파트너와 연결되어 있습니다.");
+                    return (false, "이미 배우자와 연결되어 있습니다.");
                 }
 
-                // 파트너도 이미 연결되어 있는지 확인
+                // 배우자도 이미 연결되어 있는지 확인
                 if (partnerUser.Partner != null)
                 {
-                    return (false, "해당 사용자는 이미 다른 파트너와 연결되어 있습니다.");
+                    return (false, "해당 사용자는 이미 다른 배우자와 연결되어 있습니다.");
                 }
 
                 // 공유 DEK 생성
@@ -72,28 +72,50 @@ namespace MeTenTenMaui.Services
                 var myEncryptedSharedDEK = await _encryptionService.EncryptDEKAsync(
                     sharedDek, _currentUserEmail, myPassword);
 
-                // 내 계정에 파트너 정보 설정
+                // 내 계정에 배우자 정보 설정
                 var currentUserPartnerInfo = new PartnerInfo
                 {
-                    PartnerId = partnerUserId, // 파트너의 실제 사용자 ID
+                    PartnerId = partnerUserId, // 배우자의 실제 사용자 ID
                     PartnerEmail = partnerEmail,
                     PartnerDisplayName = partnerUser.DisplayName ?? partnerEmail,
                     ConnectedAt = DateTime.Now.ToString("o"),
-                    EncryptedSharedDEK = myEncryptedSharedDEK
+                    EncryptedSharedDEK = new 
+                    {
+                        value = myEncryptedSharedDEK,
+                        timestamp = DateTime.Now.ToString("o")
+                    }
                 };
 
-                // Firebase에 내 파트너 정보 저장
+                // Firebase에 내 배우자 정보 저장
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 1: Saving User1 partner info for user: {_currentUserId}");
                 await _firebaseDataService.UpdatePartnerInfoAsync(_currentUserId, currentUserPartnerInfo);
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 1 Complete: User1 partner info saved");
                 
-                // 파트너를 위한 pending shared DEK 저장 (평문)
+                // User2(배우자)의 partner 정보도 설정
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 2: Creating User2 partner info for user: {partnerUserId}");
+                var partnerUserPartnerInfo = new PartnerInfo
+                {
+                    PartnerId = _currentUserId,
+                    PartnerEmail = _currentUserEmail,
+                    PartnerDisplayName = currentUser.DisplayName ?? _currentUserEmail,
+                    ConnectedAt = DateTime.Now.ToString("o"),
+                    EncryptedSharedDEK = "" // 로그인 시 pending DEK로 채워짐
+                };
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 2: Saving User2 partner info");
+                await _firebaseDataService.UpdatePartnerInfoAsync(partnerUserId, partnerUserPartnerInfo);
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 2 Complete: User2 partner info saved");
+                
+                // 배우자를 위한 pending shared DEK 저장 (평문)
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 3: Saving pending shared DEK for user: {partnerUserId}");
                 await _firebaseDataService.SavePendingSharedDEKAsync(partnerUserId, sharedDek, _currentUserId);
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Step 3 Complete: Pending shared DEK saved");
 
-                return (true, $"파트너와 연결되었습니다: {partnerUser.DisplayName ?? partnerEmail}");
+                return (true, $"배우자와 연결되었습니다: {partnerUser.DisplayName ?? partnerEmail}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[PartnerService] Error inviting partner: {ex.Message}");
-                return (false, "파트너 초대 중 오류가 발생했습니다.");
+                return (false, "배우자 초대 중 오류가 발생했습니다.");
             }
         }
 
@@ -108,22 +130,30 @@ namespace MeTenTenMaui.Services
                     return (false, "로그인이 필요합니다.");
                 }
 
-                var currentUser = await _firebaseDataService.GetUserByEmailAsync(_currentUserEmail!);
+                // GetUserAsync를 사용하여 JSON 파싱 오류 방지
+                var currentUser = await _firebaseDataService.GetUserAsync(_currentUserId);
                 if (currentUser?.Partner == null)
                 {
-                    return (false, "연결된 파트너가 없습니다.");
+                    return (false, "연결된 배우자가 없습니다.");
                 }
 
-                // 양쪽 사용자의 파트너 정보 제거
-                await _firebaseDataService.RemovePartnerInfoAsync(_currentUserId);
-                await _firebaseDataService.RemovePartnerInfoAsync(currentUser.Partner.PartnerId);
+                var partnerId = currentUser.Partner.PartnerId;
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Disconnecting partner: {partnerId}");
 
-                return (true, "파트너 연결이 해제되었습니다.");
+                // 양쪽 사용자의 배우자 정보 제거
+                await _firebaseDataService.RemovePartnerInfoAsync(_currentUserId);
+                await _firebaseDataService.RemovePartnerInfoAsync(partnerId);
+
+                // 공유 DEK 메모리에서 제거
+                _encryptionService.ClearSharedDEK();
+
+                System.Diagnostics.Debug.WriteLine($"[PartnerService] Partner disconnected successfully");
+                return (true, "배우자 연결이 해제되었습니다.");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[PartnerService] Error disconnecting partner: {ex.Message}");
-                return (false, "파트너 연결 해제 중 오류가 발생했습니다.");
+                return (false, "배우자 연결 해제 중 오류가 발생했습니다.");
             }
         }
 
@@ -175,7 +205,7 @@ namespace MeTenTenMaui.Services
                 }
 
                 var partnerInfo = await GetPartnerInfoAsync();
-                if (partnerInfo?.PartnerId == null || string.IsNullOrEmpty(partnerInfo.EncryptedSharedDEK))
+                if (partnerInfo?.PartnerId == null || string.IsNullOrEmpty(partnerInfo.GetEncryptedSharedDEKValue()))
                 {
                     return new List<TenTen>();
                 }
@@ -187,7 +217,7 @@ namespace MeTenTenMaui.Services
                     return new List<TenTen>();
                 }
 
-                // 파트너의 TenTens 조회
+                // 배우자의 TenTens 조회
                 var tenTens = await _firebaseDataService.GetTenTensByTopicAsync(partnerInfo.PartnerId, topicFirebaseKey);
 
                 // 암호화 타입에 따라 복호화
@@ -253,7 +283,7 @@ namespace MeTenTenMaui.Services
                     return new List<Topic>();
                 }
 
-                // 파트너의 모든 Topic 조회
+                // 배우자의 모든 Topic 조회
                 var allTopics = await _firebaseDataService.GetAllTopicsAsync(partnerInfo.PartnerId);
                 
                 // 완료된 Topic만 필터링 (TenTen이 있고, IsActive=true이며, shared TenTen이 있는 Topic)

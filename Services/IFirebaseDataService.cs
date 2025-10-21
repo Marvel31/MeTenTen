@@ -31,6 +31,7 @@ namespace MeTenTenMaui.Services
         Task<TenTen> CreateTenTenAsync(string userId, CreateTenTenRequest request);
         Task<TenTen> CreateTenTenAsync(string userId, CreateTenTenRequest request, string encryptionType);
         Task<TenTen> UpdateTenTenAsync(string userId, string tenTenId, UpdateTenTenRequest request);
+        Task<TenTen> UpdateTenTenAsync(string userId, string tenTenId, UpdateTenTenRequest request, string encryptionType);
         Task<bool> DeleteTenTenAsync(string userId, string tenTenId);
         Task<bool> DeleteTenTensByTopicAsync(string userId, string topicFirebaseKey);
         

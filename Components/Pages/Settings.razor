@@ -68,16 +68,16 @@
         </div>
     </div>
     
-    <!-- 파트너 관리 섹션 -->
+    <!-- 배우자 관리 섹션 -->
     <div class="partner-section">
-        <h3>파트너 관리</h3>
+        <h3>배우자 관리</h3>
         
         @if (partner == null)
         {
             <div class="no-partner">
-                <p>연결된 파트너가 없습니다.</p>
+                <p>연결된 배우자가 없습니다.</p>
                 <div class="invite-form">
-                    <input @bind="partnerEmail" placeholder="파트너 이메일 입력" class="form-control" />
+                    <input @bind="partnerEmail" placeholder="배우자 이메일 입력" class="form-control" />
                     <button @onclick="ShowInviteDialog" class="btn btn-primary" disabled="@isLoading">
                         @if (isLoading)
                         {
@@ -85,7 +85,7 @@
                         }
                         else
                         {
-                            <span>파트너 초대</span>
+                            <span>배우자 초대</span>
                         }
                     </button>
                 </div>
@@ -101,7 +101,7 @@
         {
             <div class="partner-info">
                 <div class="partner-details">
-                    <p><strong>연결된 파트너:</strong> @partner.PartnerDisplayName</p>
+                    <p><strong>연결된 배우자:</strong> @partner.PartnerDisplayName</p>
                     <p><strong>이메일:</strong> @partner.PartnerEmail</p>
                     <p><strong>연결일:</strong> @FormatDate(partner.ConnectedAt)</p>
                 </div>
@@ -120,7 +120,7 @@
                         }
                         else
                         {
-                            <span>파트너 연결 해제</span>
+                            <span>배우자 연결 해제</span>
                         }
                     </button>
                 </div>
@@ -154,13 +154,13 @@
     
 </div>
 
-<!-- 파트너 초대 다이얼로그 -->
+<!-- 배우자 초대 다이얼로그 -->
 @if (showInviteDialog)
 {
     <div class="modal-overlay" @onclick="HideInviteDialog">
         <div class="modal-content" @onclick:stopPropagation="true">
-            <h4>파트너 초대</h4>
-            <p>파트너와 연결하려면 내 비밀번호만 필요합니다.</p>
+            <h4>배우자 초대</h4>
+            <p>배우자와 연결하려면 내 비밀번호만 필요합니다.</p>
             <div class="password-form">
                 <div class="form-group">
                     <label for="myPassword">내 비밀번호</label>
@@ -414,7 +414,7 @@
     private string passwordMessage = "";
     private bool passwordSuccess = false;
     
-    // 파트너 초대 관련 변수
+    // 배우자 초대 관련 변수
     private bool showInviteDialog = false;
     private string myPassword = "";
 
@@ -481,7 +481,7 @@
     {
         if (string.IsNullOrWhiteSpace(partnerEmail))
         {
-            message = "파트너 이메일을 입력해주세요.";
+            message = "배우자 이메일을 입력해주세요.";
             isSuccess = false;
             return;
         }
@@ -519,7 +519,7 @@
         }
         catch (Exception ex)
         {
-            message = "파트너 초대 중 오류가 발생했습니다.";
+            message = "배우자 초대 중 오류가 발생했습니다.";
             isSuccess = false;
             System.Diagnostics.Debug.WriteLine($"[Settings] Error inviting partner: {ex.Message}");
         }
@@ -547,7 +547,7 @@
         }
         catch (Exception ex)
         {
-            message = "파트너 연결 해제 중 오류가 발생했습니다.";
+            message = "배우자 연결 해제 중 오류가 발생했습니다.";
             isSuccess = false;
             System.Diagnostics.Debug.WriteLine($"[Settings] Error disconnecting partner: {ex.Message}");
         }

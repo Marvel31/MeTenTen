@@ -31,28 +31,64 @@ namespace MeTenTenMaui.Services
             {
                 if (tenTen.IsEncrypted && !string.IsNullOrEmpty(tenTen.Content))
                 {
-                    try
+                    System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypting ID {tenTen.Id}, EncryptionType: {tenTen.EncryptionType}, HasSharedDEK: {_encryptionService.HasSharedDEK}, IsInitialized: {_encryptionService.IsInitialized}");
+                    
+                    if (tenTen.EncryptionType == "shared" && _encryptionService.HasSharedDEK)
                     {
-                        if (tenTen.EncryptionType == "shared" && _encryptionService.HasSharedDEK)
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Using shared DEK for ID {tenTen.Id}");
+                        try
                         {
                             tenTen.Content = await _encryptionService.DecryptWithSharedDEKAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with shared DEK for ID {tenTen.Id}");
                         }
-                        else if (tenTen.EncryptionType == "shared" && !_encryptionService.HasSharedDEK)
+                        catch (Exception ex)
                         {
-                            // Shared DEK가 없는 경우 개인 DEK로 복호화 시도
-                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for ID {tenTen.Id}");
-                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
-                        }
-                        else
-                        {
-                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK failed for ID {tenTen.Id}, trying personal DEK: {ex.Message}");
+                            try
+                            {
+                                tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for ID {tenTen.Id}");
+                            }
+                            catch (Exception ex2)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK also failed for ID {tenTen.Id}: {ex2.Message}");
+                                tenTen.Content = "[복호화 실패]";
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    else if (tenTen.EncryptionType == "shared" && !_encryptionService.HasSharedDEK)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypt error for ID {tenTen.Id}: {ex.Message}");
-                        tenTen.Content = "[복호화 실패]";
+                        // Shared DEK가 없는 경우 개인 DEK로 복호화 시도
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for ID {tenTen.Id}");
+                        try
+                        {
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for ID {tenTen.Id}");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK failed for ID {tenTen.Id}: {ex.Message}");
+                            tenTen.Content = "[복호화 실패]";
+                        }
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Using personal DEK for ID {tenTen.Id}");
+                        try
+                        {
+                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for ID {tenTen.Id}");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK failed for ID {tenTen.Id}: {ex.Message}");
+                            tenTen.Content = "[복호화 실패]";
+                        }
+                    }
+                }
+                else if (tenTen.IsEncrypted)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TenTen] ID {tenTen.Id} is encrypted but content is empty or null");
                 }
             }
             
@@ -96,26 +132,71 @@ namespace MeTenTenMaui.Services
                 {
                     try
                     {
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypting by topic ID {tenTen.Id}, EncryptionType: {tenTen.EncryptionType}, HasSharedDEK: {_encryptionService.HasSharedDEK}, IsInitialized: {_encryptionService.IsInitialized}");
+                        
                         if (tenTen.EncryptionType == "shared" && _encryptionService.HasSharedDEK)
                         {
-                            tenTen.Content = await _encryptionService.DecryptWithSharedDEKAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Using shared DEK for topic ID {tenTen.Id}");
+                            try
+                            {
+                                tenTen.Content = await _encryptionService.DecryptWithSharedDEKAsync(tenTen.Content);
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with shared DEK for topic ID {tenTen.Id}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK failed for topic ID {tenTen.Id}, trying personal DEK: {ex.Message}");
+                                try
+                                {
+                                    tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                                    System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for topic ID {tenTen.Id}");
+                                }
+                                catch (Exception ex2)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK also failed for topic ID {tenTen.Id}: {ex2.Message}");
+                                    tenTen.Content = "[복호화 실패]";
+                                }
+                            }
                         }
                         else if (tenTen.EncryptionType == "shared" && !_encryptionService.HasSharedDEK)
                         {
                             // Shared DEK가 없는 경우 개인 DEK로 복호화 시도
-                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for ID {tenTen.Id}");
-                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Shared DEK not available, trying personal DEK for topic ID {tenTen.Id}");
+                            try
+                            {
+                                tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for topic ID {tenTen.Id}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK failed for topic ID {tenTen.Id}: {ex.Message}");
+                                tenTen.Content = "[복호화 실패]";
+                            }
                         }
                         else
                         {
-                            tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                            System.Diagnostics.Debug.WriteLine($"[TenTen] Using personal DEK for topic ID {tenTen.Id}");
+                            try
+                            {
+                                tenTen.Content = await _encryptionService.DecryptAsync(tenTen.Content);
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Successfully decrypted with personal DEK for topic ID {tenTen.Id}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[TenTen] Personal DEK failed for topic ID {tenTen.Id}: {ex.Message}");
+                                tenTen.Content = "[복호화 실패]";
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[TenTen] Decrypt error for ID {tenTen.Id}: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Unexpected error for topic ID {tenTen.Id}: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"[TenTen] Exception details: {ex.GetType().Name}: {ex.StackTrace}");
                         tenTen.Content = "[복호화 실패]";
                     }
+                }
+                else if (tenTen.IsEncrypted)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TenTen] Topic ID {tenTen.Id} is encrypted but content is empty or null");
                 }
             }
             
@@ -156,7 +237,12 @@ namespace MeTenTenMaui.Services
                 throw new ArgumentException($"TenTen with ID {id} not found");
             }
 
-            return await _firebaseDataService.UpdateTenTenAsync(_authService.CurrentUserId, existingTenTen.FirebaseKey, request);
+            // 기존 항목의 EncryptionType을 유지하여 업데이트 시 일관성 보장
+            return await _firebaseDataService.UpdateTenTenAsync(
+                _authService.CurrentUserId,
+                existingTenTen.FirebaseKey,
+                request,
+                existingTenTen.EncryptionType ?? "personal");
         }
 
         public async Task<TenTen> UpdateTenTenAsync(TenTen tenTen)
@@ -176,7 +262,11 @@ namespace MeTenTenMaui.Services
                 Content = tenTen.Content
             };
 
-            return await _firebaseDataService.UpdateTenTenAsync(_authService.CurrentUserId, tenTen.FirebaseKey, updateRequest);
+            return await _firebaseDataService.UpdateTenTenAsync(
+                _authService.CurrentUserId,
+                tenTen.FirebaseKey,
+                updateRequest,
+                tenTen.EncryptionType ?? "personal");
         }
 
         public async Task<bool> DeleteTenTenAsync(int id)

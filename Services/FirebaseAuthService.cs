@@ -129,7 +129,7 @@ namespace MeTenTenMaui.Services
                         // 4. Pending shared DEK 확인 및 처리
                         await ProcessPendingSharedDEKAsync(userId, email, password);
                         
-                        // 5. 파트너가 있으면 공유 DEK 로드
+                        // 5. 배우자가 있으면 공유 DEK 로드
                         await LoadSharedDEKIfPartnerExists(userId, email, password);
                     }
                     
@@ -287,20 +287,30 @@ namespace MeTenTenMaui.Services
         {
             try
             {
-                // 파트너 정보 조회
+                // 배우자 정보 조회
                 var user = await _firebaseDataService.GetUserAsync(userId);
-                if (user?.Partner != null && !string.IsNullOrEmpty(user.Partner.EncryptedSharedDEK))
+                if (user?.Partner != null)
                 {
-                    // 공유 DEK 복호화
-                    var sharedDek = await _encryptionService.DecryptDEKAsync(
-                        user.Partner.EncryptedSharedDEK, 
-                        email, 
-                        password);
+                    // PartnerInfo의 GetEncryptedSharedDEKValue() 메서드 사용
+                    var encryptedDEK = user.Partner.GetEncryptedSharedDEKValue();
                     
-                    // 공유 DEK를 메모리에 설정
-                    _encryptionService.SetSharedDEK(sharedDek);
-                    
-                    System.Diagnostics.Debug.WriteLine($"[Auth] Shared DEK loaded for user: {email}");
+                    if (!string.IsNullOrEmpty(encryptedDEK))
+                    {
+                        // 공유 DEK 복호화
+                        var sharedDek = await _encryptionService.DecryptDEKAsync(
+                            encryptedDEK, 
+                            email, 
+                            password);
+                        
+                        // 공유 DEK를 메모리에 설정
+                        _encryptionService.SetSharedDEK(sharedDek);
+                        
+                        System.Diagnostics.Debug.WriteLine($"[Auth] Shared DEK loaded for user: {email}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Auth] No encrypted shared DEK found for user: {email}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -314,17 +324,25 @@ namespace MeTenTenMaui.Services
         {
             try
             {
-                // Pending shared DEK 확인 (파트너가 초대한 경우)
+                System.Diagnostics.Debug.WriteLine($"[Auth] Checking pending shared DEK for user: {userId}");
+                
+                // Pending shared DEK 확인 (배우자가 초대한 경우)
                 var pendingDEK = await _firebaseDataService.GetPendingSharedDEKAsync(userId);
                 if (pendingDEK != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[Auth] Found pending shared DEK for user: {email}");
+                    
                     // 내 비밀번호로 암호화해서 저장
                     var encryptedForMe = await _encryptionService.EncryptDEKAsync(
                         pendingDEK, email, password);
                     
+                    System.Diagnostics.Debug.WriteLine($"[Auth] Encrypted shared DEK for user: {email}");
+                    
                     // 내 계정에 저장
                     await _firebaseDataService.UpdatePartnerSharedDEKAsync(
                         userId, encryptedForMe);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[Auth] Updated partner shared DEK in Firebase for user: {email}");
                     
                     // Pending DEK 삭제
                     await _firebaseDataService.DeletePendingSharedDEKAsync(userId);
@@ -334,10 +352,15 @@ namespace MeTenTenMaui.Services
                     
                     System.Diagnostics.Debug.WriteLine($"[Auth] Processed pending shared DEK for user: {email}");
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Auth] No pending shared DEK found for user: {email}");
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Auth] Error processing pending shared DEK: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Auth] Stack trace: {ex.StackTrace}");
                 // Pending DEK 처리 실패는 로그인을 중단시키지 않음
             }
         }

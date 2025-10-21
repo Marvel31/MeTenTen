@@ -220,20 +220,25 @@ namespace MeTenTenMaui.Services
         {
             if (!IsInitialized)
             {
+                System.Diagnostics.Debug.WriteLine("[Encryption] Service not initialized");
                 throw new InvalidOperationException("Encryption service not initialized. Call SetDEK first.");
             }
 
             if (string.IsNullOrEmpty(encryptedText))
             {
+                System.Diagnostics.Debug.WriteLine("[Encryption] Encrypted text is empty");
                 return Task.FromResult(string.Empty);
             }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Starting decryption of {encryptedText.Length} chars");
                 var fullCipher = Convert.FromBase64String(encryptedText);
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Base64 decoded to {fullCipher.Length} bytes");
 
                 if (fullCipher.Length < IVSize)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[Encryption] Invalid data length: {fullCipher.Length} < {IVSize}");
                     throw new ArgumentException("Invalid encrypted data");
                 }
 
@@ -244,6 +249,8 @@ namespace MeTenTenMaui.Services
                 // 암호문 추출
                 var cipherBytes = new byte[fullCipher.Length - IVSize];
                 Buffer.BlockCopy(fullCipher, IVSize, cipherBytes, 0, cipherBytes.Length);
+
+                System.Diagnostics.Debug.WriteLine($"[Encryption] IV: {Convert.ToBase64String(iv)}, Cipher length: {cipherBytes.Length}");
 
                 using (var aes = Aes.Create())
                 {
@@ -256,7 +263,7 @@ namespace MeTenTenMaui.Services
                     {
                         var decryptedBytes = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
                         var result = Encoding.UTF8.GetString(decryptedBytes);
-                        System.Diagnostics.Debug.WriteLine($"[Encryption] Decrypted {encryptedText.Length} chars to {result.Length} chars");
+                        System.Diagnostics.Debug.WriteLine($"[Encryption] Successfully decrypted {encryptedText.Length} chars to {result.Length} chars");
                         return Task.FromResult(result);
                     }
                 }
@@ -264,6 +271,8 @@ namespace MeTenTenMaui.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Encryption] Decryption error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Exception type: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Stack trace: {ex.StackTrace}");
                 throw new InvalidOperationException("Failed to decrypt data. The data may be corrupted or the DEK is incorrect.", ex);
             }
         }
@@ -359,17 +368,21 @@ namespace MeTenTenMaui.Services
         {
             if (!HasSharedDEK)
             {
+                System.Diagnostics.Debug.WriteLine("[Encryption] Shared DEK not initialized");
                 throw new InvalidOperationException("Shared DEK not initialized. Call SetSharedDEK first.");
             }
 
             if (string.IsNullOrEmpty(encryptedText))
             {
+                System.Diagnostics.Debug.WriteLine("[Encryption] Shared DEK encrypted text is empty");
                 return string.Empty;
             }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Starting shared DEK decryption of {encryptedText.Length} chars");
                 var cipherBytes = Convert.FromBase64String(encryptedText);
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK base64 decoded to {cipherBytes.Length} bytes");
 
                 using (var aes = Aes.Create())
                 {
@@ -386,18 +399,24 @@ namespace MeTenTenMaui.Services
                     var encryptedData = new byte[cipherBytes.Length - 16];
                     Array.Copy(cipherBytes, 16, encryptedData, 0, encryptedData.Length);
 
+                    System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK IV: {Convert.ToBase64String(iv)}, Encrypted data length: {encryptedData.Length}");
+
                     using (var decryptor = aes.CreateDecryptor())
                     using (var msDecrypt = new MemoryStream(encryptedData))
                     using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     using (var srDecrypt = new StreamReader(csDecrypt))
                     {
-                        return await srDecrypt.ReadToEndAsync();
+                        var result = await srDecrypt.ReadToEndAsync();
+                        System.Diagnostics.Debug.WriteLine($"[Encryption] Successfully decrypted with shared DEK {encryptedText.Length} chars to {result.Length} chars");
+                        return result;
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Encryption] Error decrypting with shared DEK: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK exception type: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"[Encryption] Shared DEK stack trace: {ex.StackTrace}");
                 throw new InvalidOperationException("Failed to decrypt with shared DEK", ex);
             }
         }

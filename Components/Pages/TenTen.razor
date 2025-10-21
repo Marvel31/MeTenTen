@@ -152,9 +152,9 @@
 
 
 <!-- 삭제 확인 모달 -->
-@if (showDeleteConfirmationModal)
+@if (showDeleteConfirmationModal && topicToDelete != null)
 {
-    <div class="modal-overlay" @onclick="CloseDeleteConfirmationModal">
+    <div class="modal-overlay delete-confirmation-modal" @onclick="CloseDeleteConfirmationModal">
         <div class="modal-content" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h3>주제 삭제 확인</h3>
@@ -164,7 +164,7 @@
                 <div class="alert alert-warning">
                     <strong>⚠️ 주의:</strong> 이 주제와 관련된 모든 10&10 내용이 함께 삭제됩니다.
                 </div>
-                <p>정말로 "<strong>@topicToDelete?.Subject</strong>" 주제를 삭제하시겠습니까?</p>
+                <p>정말로 "<strong>@topicToDelete.Subject</strong>" 주제를 삭제하시겠습니까?</p>
                 <p class="text-muted">이 작업은 되돌릴 수 없습니다.</p>
             </div>
             <div class="modal-footer">
@@ -219,7 +219,7 @@
                             @if (isReadOnlyMode)
                             {
                                 <div class="partner-badge">
-                                    <span class="bi bi-person-heart"></span> 파트너의 10&10
+                                    <span class="bi bi-person-heart"></span> 배우자의 10&10
                                 </div>
                             }
                             <div class="content-display">
@@ -315,7 +315,7 @@
 
                             <div class="writing-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseTenTenModal">취소</button>
-                                <button type="button" class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(selectedTopic)">
+                                <button type="button" class="btn btn-danger" @onclick="ShowDeleteConfirmationForCurrentTopic">
                                     <span class="bi bi-trash"></span> 삭제
                                 </button>
                                 <button type="submit" class="btn btn-primary btn-lg">저장</button>
@@ -401,9 +401,13 @@
             isLoading = true;
             StateHasChanged();
             
+            System.Diagnostics.Debug.WriteLine($"[TenTen] LoadData started - TenTenService type: {TenTenService.GetType().Name}");
+            
             // Topics와 TenTens를 병렬로 로드
             var topicsTask = TopicService.GetTopicsAsync();
             var tenTensTask = TenTenService.GetTenTensAsync();
+            
+            System.Diagnostics.Debug.WriteLine("[TenTen] Tasks created, waiting for completion...");
             
             await Task.WhenAll(topicsTask, tenTensTask);
             
@@ -411,10 +415,21 @@
             tenTens = await tenTensTask;
             
             System.Diagnostics.Debug.WriteLine($"[TenTen] Loaded {topics.Count} topics and {tenTens.Count} tentens");
+            
+            // TenTens 내용 확인
+            foreach (var tenTen in tenTens)
+            {
+                var contentPreview = tenTen.Content != null && tenTen.Content.Length > 50 
+                    ? tenTen.Content.Substring(0, 50) + "..." 
+                    : tenTen.Content ?? "[null]";
+                System.Diagnostics.Debug.WriteLine($"[TenTen] Loaded TenTen ID: {tenTen.Id}, TopicId: {tenTen.TopicId}, IsEncrypted: {tenTen.IsEncrypted}, Content: {contentPreview}");
+            }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[TenTen] Error loading data: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Exception type: {ex.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Stack trace: {ex.StackTrace}");
         }
         finally
         {
@@ -531,12 +546,35 @@
     {
         topicToDelete = topic;
         showDeleteConfirmationModal = true;
+        StateHasChanged(); // 모달 즉시 표시
+    }
+
+    private async void ShowDeleteConfirmationForCurrentTopic()
+    {
+        if (selectedTopic != null)
+        {
+            topicToDelete = selectedTopic;
+            showDeleteConfirmationModal = true;
+            
+            // 강제로 UI 업데이트
+            await InvokeAsync(StateHasChanged);
+            
+            // JavaScript로도 확인
+            await JSRuntime.InvokeVoidAsync("console.log", $"Delete confirmation modal shown for topic: {selectedTopic.Subject}");
+            System.Diagnostics.Debug.WriteLine($"[TenTen] Delete confirmation modal shown for topic: {selectedTopic.Subject}");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "selectedTopic is null, cannot show delete confirmation");
+            System.Diagnostics.Debug.WriteLine("[TenTen] selectedTopic is null, cannot show delete confirmation");
+        }
     }
 
     private void CloseDeleteConfirmationModal()
     {
         showDeleteConfirmationModal = false;
         topicToDelete = null;
+        StateHasChanged(); // 모달 즉시 닫기
     }
 
     private async Task ConfirmDeleteTopic()
@@ -550,6 +588,7 @@
                 FilterTopicsByMonth();
                 CloseDeleteConfirmationModal();
                 CloseTenTenModal(); // 10&10 작성 화면도 닫기
+                StateHasChanged(); // UI 즉시 업데이트
             }
             catch (Exception)
             {
@@ -617,6 +656,7 @@
         currentTenTen = new();
         isEditing = false;
         StopTimer();
+        StateHasChanged(); // 모달 즉시 닫기
     }
 
     private void EnableEditMode()
@@ -643,7 +683,7 @@
             else
             {
                 // 새 10&10 생성
-                // 파트너가 있으면 항상 "shared", 없으면 "personal"
+                // 배우자가 있으면 항상 "shared", 없으면 "personal"
                 var encryptionType = hasPartner ? "shared" : "personal";
                 await TenTenService.CreateTenTenAsync(currentTenTen, encryptionType);
                 

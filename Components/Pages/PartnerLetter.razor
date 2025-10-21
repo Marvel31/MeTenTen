@@ -9,46 +9,57 @@
 
 <PageTitle>배우자의 10&10 - MeTenTen</PageTitle>
 
-<div class="partner-letter-container">
-    <div class="letter-envelope">
-        <div class="letter-header">
-            <div class="sender-info">
-                <div class="sender-avatar">💕</div>
-                <div class="sender-details">
-                    <h5>@topicSubject</h5>
+<div class="fullscreen-writing-container">
+    <div class="writing-header">
+        <div class="header-left">
+            <button class="btn btn-outline-secondary" @onclick="CloseLetter">
+                <span class="bi bi-arrow-left"></span> 뒤로가기
+            </button>
+        </div>
+        <div class="header-center">
+            <h2>배우자의 10&10</h2>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-outline-danger" @onclick="CloseLetter">
+                <span class="bi bi-x"></span> 닫기
+            </button>
+        </div>
+    </div>
+    <div class="writing-content">
+        <div class="topic-info-section-readonly">
+            <div class="topic-display">
+                <h3>@topicSubject</h3>
+            </div>
+            <div class="topic-meta-readonly">
+                <span class="topic-date">📅 @FormatDate(topicCreatedAt)</span>
+                @if (!string.IsNullOrEmpty(topicDescription))
+                {
+                    <p class="topic-description">@topicDescription</p>
+                }
+            </div>
+        </div>
+        
+        <div class="read-mode-content">
+            <div class="content-display">
+                <h4>📝 작성된 내용</h4>
+                <div class="content-text">
+                    @if (tenTens.Any())
+                    {
+                        @foreach (MeTenTenMaui.Models.TenTen tenTen in tenTens)
+                        {
+                            <div style="margin-bottom: 1.5rem;">
+                                @tenTen.Content
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>아직 작성된 10&10이 없습니다.</p>
+                    }
                 </div>
             </div>
-        </div>
-
-        <div class="letter-date" style="position: relative; text-align: right; margin: 10px 0;">
-            <span style="color: #666; font-size: 0.9em; position: absolute; right: 0;">@FormatDate(topicCreatedAt)</span>
-        </div>
-
-        <div class="letter-content">
-            <div class="letter-body">
-                @if (tenTens.Any())
-                {
-                    @foreach (MeTenTenMaui.Models.TenTen tenTen in tenTens)
-                    {
-                        <div class="tenten-content" style="font-size: 1em; margin: 8px 0;">
-                            @tenTen.Content
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="empty-content">
-                        <p>아직 작성된 10&10이 없습니다.</p>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="letter-footer">
-            <div class="letter-actions">
-                <button class="btn btn-primary" @onclick="CloseLetter">
-                    <span class="bi bi-heart"></span> 닫기
-                </button>
+            <div class="writing-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseLetter">닫기</button>
             </div>
         </div>
     </div>
@@ -81,7 +92,7 @@
     {
         try
         {
-            // 파트너의 Topic 목록에서 해당 Topic 조회
+            // 배우자의 Topic 목록에서 해당 Topic 조회
             var partnerTopics = await PartnerService.GetPartnerCompletedTopicsAsync();
             var selectedTopic = partnerTopics.FirstOrDefault(t => t.FirebaseKey == TopicId);
             

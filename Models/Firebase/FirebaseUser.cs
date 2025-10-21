@@ -4,19 +4,19 @@ namespace MeTenTenMaui.Models.Firebase
 {
     public class FirebaseUser
     {
-        [JsonProperty("email")]
+        [JsonProperty("Email")]
         public string? Email { get; set; }
         
-        [JsonProperty("displayName")]
+        [JsonProperty("DisplayName")]
         public string? DisplayName { get; set; }
         
-        [JsonProperty("encryptedDEK")]
+        [JsonProperty("EncryptedDEK")]
         public string? EncryptedDEK { get; set; } // 비밀번호로 암호화된 DEK
         
-        [JsonProperty("createdAt")]
+        [JsonProperty("CreatedAt")]
         public string CreatedAt { get; set; } = string.Empty;
         
-        [JsonProperty("updatedAt")]
+        [JsonProperty("UpdatedAt")]
         public string? UpdatedAt { get; set; }
         
         [JsonProperty("partner")]

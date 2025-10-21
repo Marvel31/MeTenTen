@@ -50,15 +50,32 @@ namespace MeTenTenMaui.Services
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Getting user DEK for user: {userId}");
+                
                 var firebaseUser = await _firebaseClient
                     .Child("users")
                     .Child(userId)
                     .OnceSingleAsync<FirebaseUser>();
 
-                if (firebaseUser != null && !string.IsNullOrEmpty(firebaseUser.EncryptedDEK))
+                if (firebaseUser != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Firebase] Retrieved encrypted DEK for user: {userId}");
-                    return firebaseUser.EncryptedDEK;
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User object retrieved successfully");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User email: {firebaseUser.Email}");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] EncryptedDEK exists: {!string.IsNullOrEmpty(firebaseUser.EncryptedDEK)}");
+                    
+                    if (!string.IsNullOrEmpty(firebaseUser.EncryptedDEK))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Retrieved encrypted DEK for user: {userId}");
+                        return firebaseUser.EncryptedDEK;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] EncryptedDEK is null or empty for user: {userId}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User object is null for user: {userId}");
                 }
 
                 System.Diagnostics.Debug.WriteLine($"[Firebase] No encrypted DEK found for user: {userId}");
@@ -67,6 +84,37 @@ namespace MeTenTenMaui.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Error getting user DEK: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Exception type: {ex.GetType().Name}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Inner exception: {ex.InnerException.Message}");
+                }
+                
+                // JSON 파싱 실패 시 raw 데이터로 재시도
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Attempting to get raw user data for debugging");
+                    var rawData = await _firebaseClient
+                        .Child("users")
+                        .Child(userId)
+                        .OnceSingleAsync<dynamic>();
+                    
+                    if (rawData != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Raw data retrieved, checking EncryptedDEK field");
+                        var encryptedDEK = rawData.EncryptedDEK?.ToString();
+                        if (!string.IsNullOrEmpty(encryptedDEK))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Firebase] Found EncryptedDEK in raw data");
+                            return encryptedDEK;
+                        }
+                    }
+                }
+                catch (Exception rawEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Raw data retrieval also failed: {rawEx.Message}");
+                }
+                
                 return null;
             }
         }
@@ -451,13 +499,51 @@ namespace MeTenTenMaui.Services
         {
             try
             {
-                // Content 암호화
-                var encryptedContent = await _encryptionService.EncryptAsync(request.Content);
-                
+                // 기존 항목의 암호화 타입을 확인하여 일관성 유지
+                var current = await GetTenTenByIdAsync(userId, tenTenId);
+                var encryptionType = current?.EncryptionType ?? "personal";
+                return await UpdateTenTenAsync(userId, tenTenId, request, encryptionType);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Error updating tenten {tenTenId}: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<TenTen> UpdateTenTenAsync(string userId, string tenTenId, UpdateTenTenRequest request, string encryptionType)
+        {
+            try
+            {
+                // 암호화 방식 결정: 공유 DEK 가용 여부에 따라 분기
+                string encryptedContent;
+                string typeToSave = encryptionType;
+
+                if (encryptionType == "shared")
+                {
+                    if (_encryptionService.HasSharedDEK)
+                    {
+                        encryptedContent = await _encryptionService.EncryptWithSharedDEKAsync(request.Content);
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Updated with shared DEK for {tenTenId}");
+                    }
+                    else
+                    {
+                        // 정책 B: 공유 DEK가 없으면 개인 DEK로 저장하고 타입을 personal로 동기화
+                        encryptedContent = await _encryptionService.EncryptAsync(request.Content);
+                        typeToSave = "personal";
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Shared DEK not available. Updated with personal DEK and set type to personal for {tenTenId}");
+                    }
+                }
+                else
+                {
+                    encryptedContent = await _encryptionService.EncryptAsync(request.Content);
+                }
+
                 var updates = new
                 {
                     content = encryptedContent,
                     isEncrypted = true,
+                    encryptionType = typeToSave,
                     updatedAt = DateTime.Now.ToString("o")
                 };
 
@@ -473,6 +559,7 @@ namespace MeTenTenMaui.Services
                 {
                     // UI 표시를 위해 복호화된 Content 반환
                     updatedTenTen.Content = request.Content;
+                    updatedTenTen.EncryptionType = typeToSave;
                 }
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Updated tenten: {tenTenId}");
                 return updatedTenTen ?? throw new Exception("Updated TenTen not found");
@@ -581,7 +668,26 @@ namespace MeTenTenMaui.Services
                 System.Diagnostics.Debug.WriteLine($"[Firebase] User data retrieved: {user != null}");
                 if (user != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Firebase] User email: {user.Email}, Partner: {user.Partner != null}");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User email: {user.Email}");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User display name: {user.DisplayName}");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User has EncryptedDEK: {!string.IsNullOrEmpty(user.EncryptedDEK)}");
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] User has Partner: {user.Partner != null}");
+                    
+                    if (user.Partner != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Partner ID: {user.Partner.PartnerId}");
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Partner Email: {user.Partner.PartnerEmail}");
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Partner Display Name: {user.Partner.PartnerDisplayName}");
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Partner Connected At: {user.Partner.ConnectedAt}");
+                        System.Diagnostics.Debug.WriteLine($"[Firebase] Partner has EncryptedSharedDEK: {user.Partner.EncryptedSharedDEK != null}");
+                        
+                        if (user.Partner.EncryptedSharedDEK != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Firebase] EncryptedSharedDEK type: {user.Partner.EncryptedSharedDEK.GetType().Name}");
+                            var dekValue = user.Partner.GetEncryptedSharedDEKValue();
+                            System.Diagnostics.Debug.WriteLine($"[Firebase] Extracted DEK value exists: {!string.IsNullOrEmpty(dekValue)}");
+                        }
+                    }
                 }
 
                 return user;
@@ -589,6 +695,11 @@ namespace MeTenTenMaui.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Error getting user by ID {userId}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Exception type: {ex.GetType().Name}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Inner exception: {ex.InnerException.Message}");
+                }
                 return null;
             }
         }
@@ -597,17 +708,29 @@ namespace MeTenTenMaui.Services
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Updating partner info for user: {userId}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Partner ID: {partnerInfo.PartnerId}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Partner Email: {partnerInfo.PartnerEmail}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Partner Display Name: {partnerInfo.PartnerDisplayName}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Connected At: {partnerInfo.ConnectedAt}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Encrypted Shared DEK: {partnerInfo.EncryptedSharedDEK != null}");
+
                 await _firebaseClient
                     .Child("users")
                     .Child(userId)
                     .Child("partner")
                     .PutAsync(partnerInfo);
 
-                System.Diagnostics.Debug.WriteLine($"[Firebase] Updated partner info for user: {userId}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Successfully updated partner info for user: {userId}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Error updating partner info: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Firebase] Exception type: {ex.GetType().Name}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Firebase] Inner exception: {ex.InnerException.Message}");
+                }
                 throw;
             }
         }
@@ -821,9 +944,22 @@ namespace MeTenTenMaui.Services
 
                 if (pendingData?.sharedDEK != null)
                 {
-                    return Convert.FromBase64String(pendingData.sharedDEK);
+                    string sharedDEKString = pendingData.sharedDEK?.ToString();
+                    if (!string.IsNullOrEmpty(sharedDEKString))
+                    {
+                        try
+                        {
+                            return Convert.FromBase64String(sharedDEKString);
+                        }
+                        catch (FormatException ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Firebase] Invalid Base64 format for pending shared DEK: {ex.Message}");
+                            return null;
+                        }
+                    }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[Firebase] No pending shared DEK found for user: {userId}");
                 return null;
             }
             catch (Exception ex)
@@ -855,12 +991,19 @@ namespace MeTenTenMaui.Services
         {
             try
             {
+                // JSON 객체로 래핑해서 저장 (Firebase 호환성)
+                var dekData = new
+                {
+                    value = encryptedSharedDEK,
+                    timestamp = DateTime.Now.ToString("o")
+                };
+                
                 await _firebaseClient
                     .Child("users")
                     .Child(userId)
                     .Child("partner")
                     .Child("encryptedSharedDEK")
-                    .PutAsync(encryptedSharedDEK);
+                    .PutAsync(dekData);
 
                 System.Diagnostics.Debug.WriteLine($"[Firebase] Updated partner shared DEK for user: {userId}");
             }

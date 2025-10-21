@@ -15,7 +15,7 @@ namespace MeTenTenMaui.Services
                 Id = _nextId++,
                 Emoji = "😊",
                 Mood = "😊 행복",
-                Content = "오늘은 정말 좋은 하루였어요. 파트너와 함께 시간을 보내며 행복했습니다.",
+                Content = "오늘은 정말 좋은 하루였어요. 배우자와 함께 시간을 보내며 행복했습니다.",
                 CreatedAt = DateTime.Now.AddDays(-1),
                 UserId = 1,
                 UserName = "사용자"

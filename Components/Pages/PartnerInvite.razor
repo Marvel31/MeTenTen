@@ -5,12 +5,12 @@
 @inject IPartnerService PartnerService
 @inject NavigationManager Navigation
 
-<PageTitle>파트너 연결 - MeTenTen</PageTitle>
+<PageTitle>배우자 연결 - MeTenTen</PageTitle>
 
 <div class="partner-invite-container">
     <div class="partner-invite-card">
         <div class="partner-invite-header">
-            <h1>💕 파트너와 연결하기</h1>
+            <h1>💕 배우자와 연결하기</h1>
             <p>MeTenTen을 사용하려면 배우자와 연결되어야 합니다.</p>
         </div>
 
@@ -46,7 +46,7 @@
                 }
                 else
                 {
-                    <span>파트너 초대하기</span>
+                    <span>배우자 초대하기</span>
                 }
             </button>
         </EditForm>
@@ -161,19 +161,19 @@
 
             if (success)
             {
-                // 파트너 초대 성공 후 잠시 대기하여 Firebase에 데이터가 저장되도록 함
+                // 배우자 초대 성공 후 잠시 대기하여 Firebase에 데이터가 저장되도록 함
                 await Task.Delay(1000);
                 System.Diagnostics.Debug.WriteLine($"[PartnerInvite] Partner invitation successful, redirecting to home");
                 Navigation.NavigateTo("/", forceLoad: true);
             }
             else
             {
-                errorMessage = message ?? "파트너 초대에 실패했습니다.";
+                errorMessage = message ?? "배우자 초대에 실패했습니다.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "파트너 초대 중 오류가 발생했습니다: " + ex.Message;
+            errorMessage = "배우자 초대 중 오류가 발생했습니다: " + ex.Message;
         }
         finally
         {
