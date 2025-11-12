@@ -11,8 +11,8 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  User as FirebaseUser,
 } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { encryptionService } from './EncryptionService';
 import { firebaseDataService } from './FirebaseDataService';
 import { useAuthStore } from '@stores/authStore';
