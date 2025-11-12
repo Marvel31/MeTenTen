@@ -90,58 +90,63 @@
 ## Phase 2: 인증 시스템 구현
 
 ### 2.1 AuthService 구현
-- [ ] Firebase Authentication 연동
-- [ ] `signUp(email, password, name)` 구현
+- [x] Firebase Authentication 연동
+- [x] `signUp(email, password, name)` 구현
   - Firebase 사용자 등록
   - Random DEK 생성
   - DEK 암호화 및 Firebase 저장
-- [ ] `signIn(email, password)` 구현
+- [x] `signIn(email, password)` 구현
   - Firebase 인증
   - 암호화된 DEK 조회
   - DEK 복호화 및 메모리 로드
   - Pending Shared DEK 확인 및 처리
-- [ ] `signOut()` 구현
+- [x] `signOut()` 구현
   - DEK 메모리 삭제
   - Firebase 로그아웃
-- [ ] `changePassword(currentPassword, newPassword)` 구현
+- [x] `changePassword(currentPassword, newPassword)` 구현
   - 재인증
   - DEK 복호화 → 재암호화
   - Firebase 저장
-- [ ] `getCurrentUser()` 구현
+- [x] `getCurrentUser()` 구현
 
 ### 2.2 FirebaseDataService 구현 (User/DEK 관련)
-- [ ] `saveUserDEK(userId, email, displayName, encryptedDEK)` 구현
-- [ ] `getUserDEK(userId)` 구현
-- [ ] `updateUserDEK(userId, encryptedDEK)` 구현
-- [ ] `getUserByEmail(email)` 구현
-- [ ] `getUser(userId)` 구현
+- [x] `saveUserDEK(userId, email, displayName, encryptedDEK)` 구현
+- [x] `getUserDEK(userId)` 구현
+- [x] `updateUserDEK(userId, encryptedDEK)` 구현
+- [x] `getUserByEmail(email)` 구현
+- [x] `getUser(userId)` 구현
+- [x] Partner 관련 메서드 구현
+- [x] Pending Shared DEK 관리 메서드 구현
 
 ### 2.3 회원가입 UI 구현
-- [ ] 회원가입 페이지 레이아웃 (`src/pages/SignUp.tsx`)
-- [ ] 입력 필드 (이메일, 비밀번호, 이름)
-- [ ] 폼 유효성 검증 (이메일 형식, 비밀번호 최소 6자)
-- [ ] 회원가입 버튼 및 로딩 상태
-- [ ] 에러 메시지 표시
-- [ ] 로그인 페이지 링크
+- [x] 회원가입 페이지 레이아웃 (`src/pages/SignUp.tsx`)
+- [x] 입력 필드 (이메일, 비밀번호, 비밀번호 확인, 이름)
+- [x] 폼 유효성 검증 (이메일 형식, 비밀번호 최소 6자, 비밀번호 일치)
+- [x] 회원가입 버튼 및 로딩 상태
+- [x] 에러 메시지 표시
+- [x] 로그인 페이지 링크
+- [x] 보안 안내 메시지 추가
 
 ### 2.4 로그인 UI 구현
-- [ ] 로그인 페이지 레이아웃 (`src/pages/Login.tsx`)
-- [ ] 입력 필드 (이메일, 비밀번호)
-- [ ] 자동 로그인 체크박스 (선택 사항)
-- [ ] 로그인 버튼 및 로딩 상태
-- [ ] 에러 메시지 표시
-- [ ] 회원가입 페이지 링크
+- [x] 로그인 페이지 레이아웃 (`src/pages/Login.tsx`)
+- [x] 입력 필드 (이메일, 비밀번호)
+- [x] 이메일 기억하기 체크박스
+- [x] 로그인 버튼 및 로딩 상태
+- [x] 에러 메시지 표시
+- [x] 회원가입 페이지 링크
+- [x] 앱 로고 및 소개 문구 추가
 
 ### 2.5 비밀번호 변경 UI 구현
-- [ ] 비밀번호 변경 모달/페이지 (`src/components/ChangePassword.tsx`)
-- [ ] 입력 필드 (현재 비밀번호, 새 비밀번호, 확인)
-- [ ] 폼 유효성 검증
-- [ ] 변경 버튼 및 로딩 상태
-- [ ] 성공/실패 메시지
+- [x] 비밀번호 변경 모달 (`src/components/ChangePasswordModal.tsx`)
+- [x] 입력 필드 (현재 비밀번호, 새 비밀번호, 새 비밀번호 확인)
+- [x] 폼 유효성 검증
+- [x] 변경 버튼 및 로딩 상태
+- [x] 성공/실패 메시지
+- [x] 주의사항 안내 추가
 
 ### 2.6 인증 흐름 테스트
-- [ ] 회원가입 → 로그인 → 로그아웃 테스트
-- [ ] 비밀번호 변경 테스트
+- [ ] 회원가입 → 로그인 → 로그아웃 테스트 (사용자 테스트 필요)
+- [ ] 비밀번호 변경 테스트 (사용자 테스트 필요)
 - [ ] DEK 암호화/복호화 검증
 - [ ] 토큰 갱신 테스트
 
