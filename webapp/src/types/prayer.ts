@@ -2,7 +2,7 @@
  * 기도문 관련 타입 정의
  */
 
-import { BaseEntity } from './common';
+import type { BaseEntity } from './common';
 
 export interface Prayer extends BaseEntity {
   id: string;

@@ -2,7 +2,7 @@
  * 사용자 관련 타입 정의
  */
 
-import { Timestamp, BaseEntity } from './common';
+import type { Timestamp } from './common';
 
 export interface User {
   uid: string; // Firebase UID

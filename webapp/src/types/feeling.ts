@@ -2,7 +2,7 @@
  * 느낌 표현 관련 타입 정의
  */
 
-import { BaseEntity } from './common';
+import type { BaseEntity } from './common';
 
 export type FeelingCategory = 'joy' | 'fear' | 'anger' | 'sadness';
 

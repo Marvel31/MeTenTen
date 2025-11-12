@@ -2,7 +2,7 @@
  * TenTen 관련 타입 정의
  */
 
-import { FirebaseEntity, EncryptionType } from './common';
+import type { FirebaseEntity, EncryptionType } from './common';
 
 export interface TenTen extends FirebaseEntity {
   id: number; // 로컬 ID

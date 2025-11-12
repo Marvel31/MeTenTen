@@ -2,7 +2,7 @@
  * Topic 관련 타입 정의
  */
 
-import { FirebaseEntity } from './common';
+import type { FirebaseEntity } from './common';
 
 export interface Topic extends FirebaseEntity {
   id: number; // 로컬 ID
