@@ -46,37 +46,38 @@
 - [ ] Firebase 프로젝트 생성 (Console)
 - [ ] Firebase Authentication 활성화 (Email/Password)
 - [ ] Firebase Realtime Database 생성 및 설정
-- [ ] Firebase 설정 파일 작성 (`src/config/firebase.ts`)
-- [ ] Firebase 초기화 코드 작성
+- [x] Firebase 설정 파일 작성 (`src/config/firebase.ts`)
+- [x] Firebase 초기화 코드 작성
 
 ### 1.2 TypeScript 타입 정의
-- [ ] User 인터페이스 정의 (`src/types/user.ts`)
-- [ ] Topic 인터페이스 정의 (`src/types/topic.ts`)
-- [ ] TenTen 인터페이스 정의 (`src/types/tenten.ts`)
-- [ ] PartnerInfo 인터페이스 정의 (`src/types/partner.ts`)
-- [ ] FeelingExample 인터페이스 정의 (`src/types/feeling.ts`)
-- [ ] Prayer 인터페이스 정의 (`src/types/prayer.ts`)
-- [ ] API 요청/응답 타입 정의 (`src/types/api.ts`)
+- [x] User 인터페이스 정의 (`src/types/user.ts`)
+- [x] Topic 인터페이스 정의 (`src/types/topic.ts`)
+- [x] TenTen 인터페이스 정의 (`src/types/tenten.ts`)
+- [x] PartnerInfo 인터페이스 정의 (`src/types/user.ts`)
+- [x] FeelingExample 인터페이스 정의 (`src/types/feeling.ts`)
+- [x] Prayer 인터페이스 정의 (`src/types/prayer.ts`)
+- [x] 공통 타입 정의 (`src/types/common.ts`)
 
 ### 1.3 암호화 서비스 구현 (EncryptionService)
-- [ ] Web Crypto API 래퍼 함수 작성
-- [ ] PBKDF2 구현 (100,000 iterations, SHA-256)
-- [ ] AES-256-CBC 암호화/복호화 함수 구현
-- [ ] Random DEK 생성 함수 (256-bit)
-- [ ] DEK 암호화/복호화 함수 (비밀번호 기반)
-- [ ] Shared DEK 생성 및 관리 함수
-- [ ] 메모리 DEK 관리 (setDEK, setSharedDEK, clearKeys)
-- [ ] Base64 인코딩/디코딩 유틸리티
+- [x] Web Crypto API 래퍼 함수 작성
+- [x] PBKDF2 구현 (100,000 iterations, SHA-256)
+- [x] AES-256-CBC 암호화/복호화 함수 구현
+- [x] Random DEK 생성 함수 (256-bit)
+- [x] DEK 암호화/복호화 함수 (비밀번호 기반)
+- [x] Shared DEK 생성 및 관리 함수
+- [x] 메모리 DEK 관리 (setDEK, setSharedDEK, clearKeys)
+- [x] Base64 인코딩/디코딩 유틸리티
 - [ ] 암호화 서비스 단위 테스트 작성
 
 ### 1.4 상태 관리 설정
-- [ ] Zustand 스토어 생성 (`src/stores/authStore.ts`)
-- [ ] 사용자 인증 상태 관리 (user, isAuthenticated)
-- [ ] DEK 상태 관리 (dek, sharedDek - 메모리에만 저장)
-- [ ] 로딩 및 에러 상태 관리
-- [ ] 전역 상태 Hooks 작성
+- [x] Zustand 스토어 생성 (`src/stores/authStore.ts`)
+- [x] 사용자 인증 상태 관리 (user, isAuthenticated)
+- [x] DEK 상태 관리 (hasDEK, hasSharedDEK - 메모리에만 저장)
+- [x] 로딩 및 에러 상태 관리 (authStore, uiStore)
+- [x] 전역 상태 통합 export (`src/stores/index.ts`)
 
 ### 1.5 라우팅 설정
+- [x] 라우트 경로 상수 정의 (`src/config/routes.ts`)
 - [ ] React Router 설정 (`src/App.tsx`)
 - [ ] 라우트 정의 (/, /login, /signup, /home, /tentens, /partner, /feelings, /prayers, /settings)
 - [ ] Protected Route 컴포넌트 작성 (인증 필요)
