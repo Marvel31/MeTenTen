@@ -78,11 +78,12 @@
 
 ### 1.5 라우팅 설정
 - [x] 라우트 경로 상수 정의 (`src/config/routes.ts`)
-- [ ] React Router 설정 (`src/App.tsx`)
-- [ ] 라우트 정의 (/, /login, /signup, /home, /tentens, /partner, /feelings, /prayers, /settings)
-- [ ] Protected Route 컴포넌트 작성 (인증 필요)
-- [ ] Public Route 컴포넌트 작성 (로그인 후 접근 불가)
-- [ ] 404 페이지 작성
+- [x] React Router 설정 (`src/App.tsx`)
+- [x] 라우트 정의 (/, /login, /signup, /home, /tentens, /partner, /feelings, /prayers, /settings)
+- [x] Protected Route 컴포넌트 작성 (인증 필요)
+- [x] Public Route 컴포넌트 작성 (로그인 후 접근 불가)
+- [x] 404 페이지 작성
+- [x] 기본 페이지 컴포넌트 작성 (임시)
 
 ---
 
