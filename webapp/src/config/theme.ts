@@ -2,7 +2,7 @@
  * Ant Design 테마 커스터마이징
  */
 
-import { ThemeConfig } from 'antd';
+import type { ThemeConfig } from 'antd';
 
 export const theme: ThemeConfig = {
   token: {
