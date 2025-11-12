@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Modal, Form, Input, message } from 'antd';
+import { Modal, Form, Input, App } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import { authService } from '@services/AuthService';
 import {
@@ -27,6 +27,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   open,
   onClose,
 }) => {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 

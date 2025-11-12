@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Card, Form, Input, Button, Checkbox, message } from 'antd';
+import { Card, Form, Input, Button, Checkbox, App } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@services/AuthService';
@@ -19,6 +19,7 @@ interface LoginFormValues {
 }
 
 const Login: React.FC = () => {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);

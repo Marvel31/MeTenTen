@@ -2,7 +2,7 @@
  * 홈 페이지 (대시보드)
  */
 
-import { Card, Button, message } from 'antd';
+import { Card, Button, App } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@stores/authStore';
@@ -11,6 +11,7 @@ import { SUCCESS_MESSAGES } from '@utils/constants';
 import { ROUTES } from '@config/routes';
 
 const Home: React.FC = () => {
+  const { message } = App.useApp();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
