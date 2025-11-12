@@ -3,7 +3,7 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import koKR from 'antd/locale/ko_KR';
 import { theme } from '@config/theme';
 import { ROUTES } from '@config/routes';
@@ -25,7 +25,8 @@ import '@styles/global.css';
 function App() {
   return (
     <ConfigProvider theme={theme} locale={koKR}>
-      <BrowserRouter>
+      <AntApp>
+        <BrowserRouter>
         <Routes>
           {/* Public Routes (로그인 전에만 접근 가능) */}
           <Route element={<PublicRoute />}>
@@ -50,6 +51,7 @@ function App() {
           <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </AntApp>
     </ConfigProvider>
   );
 }
