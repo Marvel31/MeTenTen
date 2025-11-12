@@ -16,7 +16,7 @@ import {
 import { encryptionService } from './EncryptionService';
 import { firebaseDataService } from './FirebaseDataService';
 import { useAuthStore } from '@stores/authStore';
-import {
+import type {
   SignUpRequest,
   SignInRequest,
   ChangePasswordRequest,

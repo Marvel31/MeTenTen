@@ -14,7 +14,7 @@ import {
   equalTo,
   child,
 } from 'firebase/database';
-import { User, PartnerInfo, PendingSharedDEK } from '@types/user';
+import type { User, PartnerInfo, PendingSharedDEK } from '@types/user';
 import { getCurrentDateTime } from '@utils/date';
 
 class FirebaseDataService {
