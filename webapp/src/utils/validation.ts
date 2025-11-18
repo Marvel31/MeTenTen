@@ -81,18 +81,6 @@ export const validateDisplayName = (name: string): string | null => {
   return null;
 };
 
-/**
- * 주제 제목 검증
- */
-export const validateTopicSubject = (subject: string): string | null => {
-  if (!isRequired(subject)) {
-    return '주제를 입력해주세요.';
-  }
-  if (subject.length > 200) {
-    return '주제는 200자 이하로 입력해주세요.';
-  }
-  return null;
-};
 
 /**
  * TenTen 내용 검증
@@ -106,4 +94,44 @@ export const validateTenTenContent = (content: string): string | null => {
   }
   return null;
 };
+
+/**
+ * Topic 주제 검증
+ */
+export const validateTopicSubject = (subject: string): string | null => {
+  if (!isRequired(subject)) {
+    return '주제를 입력해주세요.';
+  }
+  if (subject.trim().length === 0) {
+    return '주제를 입력해주세요.';
+  }
+  if (subject.length > 200) {
+    return '주제는 200자 이하로 입력해주세요.';
+  }
+  return null;
+};
+
+/**
+ * Topic 날짜 검증
+ */
+export const validateTopicDate = (dateString: string): string | null => {
+  if (!isRequired(dateString)) {
+    return '날짜를 선택해주세요.';
+  }
+
+  // YYYY-MM-DD 형식 검증
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateString)) {
+    return '유효하지 않은 날짜 형식입니다. (YYYY-MM-DD)';
+  }
+
+  // 유효한 날짜인지 확인
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return '유효하지 않은 날짜입니다.';
+  }
+
+  return null;
+};
+
 

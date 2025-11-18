@@ -7,7 +7,6 @@ import type { FirebaseEntity } from './common';
 export interface Topic extends FirebaseEntity {
   id: number; // 로컬 ID
   subject: string; // 주제
-  description?: string; // 설명
   topicDate: string; // YYYY-MM-DD format
   isActive: boolean; // 활성화 여부
   userId: string; // Firebase UID
@@ -17,13 +16,11 @@ export interface Topic extends FirebaseEntity {
 
 export interface CreateTopicRequest {
   subject: string;
-  description?: string;
   topicDate: string; // YYYY-MM-DD format
 }
 
 export interface UpdateTopicRequest {
   subject?: string;
-  description?: string;
   topicDate?: string;
 }
 

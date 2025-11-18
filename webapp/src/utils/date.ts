@@ -43,6 +43,17 @@ export const formatDateTime = (date: Date | string): string => {
 };
 
 /**
+ * Date를 HH:mm:ss 형식으로 포맷 (시간만)
+ */
+export const formatTime = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(dateObj)) {
+    return '';
+  }
+  return format(dateObj, 'HH:mm:ss');
+};
+
+/**
  * Date를 한국어 표시 형식으로 포맷 (YYYY년 MM월 DD일)
  */
 export const formatDisplayDate = (date: Date | string): string => {

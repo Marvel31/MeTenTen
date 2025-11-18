@@ -3,7 +3,7 @@
  */
 
 // 앱 정보
-export const APP_NAME = import.meta.env.VITE_APP_NAME || 'MeTenTen';
+export const APP_NAME = import.meta.env.VITE_APP_NAME || '10&10';
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
 // 로컬 스토리지 키
@@ -13,7 +13,11 @@ export const STORAGE_KEYS = {
   REMEMBER_ME: 'metenten_remember_me',
   FEELINGS_DATA: 'metenten_feelings_data',
   PRAYERS_DATA: 'metenten_prayers_data',
+  CREDENTIALS: 'metenten_credentials',
 } as const;
+
+// 자격증명 설정
+export const CREDENTIAL_EXPIRY_DAYS = 30;
 
 // 타이머 설정
 export const TIMER_DURATION_MINUTES = 10;
@@ -68,6 +72,8 @@ export const ERROR_MESSAGES = {
   DEK_NOT_SET: 'DEK가 설정되지 않았습니다.',
   ENCRYPTION_FAILED: '암호화에 실패했습니다.',
   DECRYPTION_FAILED: '복호화에 실패했습니다.',
+  LOAD_FAILED: '데이터를 불러오는데 실패했습니다.',
+  DELETE_FAILED: '삭제에 실패했습니다.',
   UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.',
 } as const;
 
@@ -80,6 +86,8 @@ export const SUCCESS_MESSAGES = {
   TOPIC_CREATED: '주제가 생성되었습니다.',
   TOPIC_UPDATED: '주제가 수정되었습니다.',
   TOPIC_DELETED: '주제가 삭제되었습니다.',
+  TENTEN_CREATED: '10&10이 작성되었습니다.',
+  TENTEN_UPDATED: '10&10이 수정되었습니다.',
   TENTEN_SAVED: 'TenTen이 저장되었습니다.',
   TENTEN_DELETED: 'TenTen이 삭제되었습니다.',
   PARTNER_INVITED: '배우자 초대가 완료되었습니다.',

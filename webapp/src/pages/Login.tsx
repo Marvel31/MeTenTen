@@ -3,14 +3,13 @@
  */
 
 import { useState } from 'react';
-import { Card, Form, Input, Button, Checkbox, App } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Button, Checkbox, App, Alert } from 'antd';
+import { UserOutlined, LockOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@services/AuthService';
 import { ROUTES } from '@config/routes';
 import { validateEmail, validatePassword } from '@utils/validation';
-import { SUCCESS_MESSAGES, STORAGE_KEYS } from '@utils/constants';
-import { setStorage, getStorage } from '@utils/storage';
+import { SUCCESS_MESSAGES } from '@utils/constants';
 
 interface LoginFormValues {
   email: string;
@@ -23,16 +22,7 @@ const Login: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
-  // 저장된 이메일 불러오기
-  useState(() => {
-    const savedEmail = getStorage<string>(STORAGE_KEYS.USER_EMAIL);
-    const rememberMe = getStorage<boolean>(STORAGE_KEYS.REMEMBER_ME);
-    
-    if (savedEmail && rememberMe) {
-      form.setFieldsValue({ email: savedEmail, remember: true });
-    }
-  });
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true);
@@ -41,16 +31,8 @@ const Login: React.FC = () => {
       await authService.signIn({
         email: values.email,
         password: values.password,
+        rememberMe: values.remember || false,
       });
-
-      // 이메일 저장 여부 처리
-      if (values.remember) {
-        setStorage(STORAGE_KEYS.USER_EMAIL, values.email);
-        setStorage(STORAGE_KEYS.REMEMBER_ME, true);
-      } else {
-        setStorage(STORAGE_KEYS.USER_EMAIL, null);
-        setStorage(STORAGE_KEYS.REMEMBER_ME, false);
-      }
 
       message.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
       navigate(ROUTES.HOME);
@@ -92,12 +74,23 @@ const Login: React.FC = () => {
           }}
         >
           <h1 style={{ fontSize: '32px', margin: '0 0 8px 0', color: 'var(--primary-color)' }}>
-            MeTenTen
+            10&10
           </h1>
           <p style={{ margin: 0, fontSize: '14px' }}>
             부부 소통을 위한 10&10 프로그램
           </p>
         </div>
+
+        {rememberMe && (
+          <Alert
+            message="보안 알림"
+            description="공용 PC에서는 '로그인 유지'를 사용하지 마세요. 개인 기기에서만 사용하시기 바랍니다."
+            type="warning"
+            showIcon
+            icon={<InfoCircleOutlined />}
+            style={{ marginBottom: '24px' }}
+          />
+        )}
 
         <Form
           form={form}
@@ -150,7 +143,12 @@ const Login: React.FC = () => {
 
           <Form.Item>
             <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox disabled={loading}>이메일 기억하기</Checkbox>
+              <Checkbox 
+                disabled={loading}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              >
+                로그인 유지 (30일)
+              </Checkbox>
             </Form.Item>
           </Form.Item>
 

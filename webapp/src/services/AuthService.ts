@@ -23,6 +23,7 @@ import type {
   User,
 } from '@types/user';
 import { ERROR_MESSAGES } from '@utils/constants';
+import { saveCredentials, loadCredentials, clearCredentials } from '@utils/credentialStorage';
 
 class AuthService {
   /**
@@ -73,6 +74,9 @@ class AuthService {
       useAuthStore.getState().setUser(user);
       useAuthStore.getState().setHasDEK(true);
 
+      // 8. 자격증명 저장 (세션 스토리지에 기본으로 저장)
+      await saveCredentials(request.email, request.password, false);
+
       return user;
     } catch (error: unknown) {
       console.error('Sign up error:', error);
@@ -83,7 +87,7 @@ class AuthService {
   /**
    * 로그인
    */
-  async signIn(request: SignInRequest): Promise<User> {
+  async signIn(request: SignInRequest & { rememberMe?: boolean }): Promise<User> {
     try {
       // 1. Firebase Authentication으로 인증
       const userCredential = await signInWithEmailAndPassword(
@@ -138,6 +142,9 @@ class AuthService {
       useAuthStore.getState().setUser(user);
       useAuthStore.getState().setHasDEK(true);
 
+      // 9. 자격증명 저장 (세션 또는 로컬 스토리지)
+      await saveCredentials(request.email, request.password, request.rememberMe || false);
+
       return user;
     } catch (error: unknown) {
       console.error('Sign in error:', error);
@@ -150,13 +157,16 @@ class AuthService {
    */
   async signOut(): Promise<void> {
     try {
-      // 1. DEK 메모리 삭제
+      // 1. 저장된 자격증명 삭제
+      await clearCredentials();
+
+      // 2. DEK 메모리 삭제
       encryptionService.clearKeys();
 
-      // 2. Firebase 로그아웃
+      // 3. Firebase 로그아웃
       await firebaseSignOut(auth);
 
-      // 3. 인증 상태 초기화
+      // 4. 인증 상태 초기화
       useAuthStore.getState().clearAuth();
     } catch (error: unknown) {
       console.error('Sign out error:', error);
@@ -230,6 +240,13 @@ class AuthService {
         });
       }
 
+      // 8. 저장된 자격증명 업데이트
+      const credentials = await loadCredentials();
+      if (credentials) {
+        // 기존에 자격증명이 저장되어 있었다면 새 비밀번호로 업데이트
+        await saveCredentials(currentUser.email, request.newPassword, true);
+      }
+
       console.log('Password changed successfully');
     } catch (error: unknown) {
       console.error('Change password error:', error);
@@ -242,6 +259,30 @@ class AuthService {
    */
   getCurrentUser(): FirebaseUser | null {
     return auth.currentUser;
+  }
+
+  /**
+   * 저장된 자격증명으로 자동 로그인
+   */
+  async loadAndAutoLogin(): Promise<User | null> {
+    try {
+      const credentials = await loadCredentials();
+      if (!credentials) {
+        return null;
+      }
+
+      // 저장된 자격증명으로 로그인 시도
+      return await this.signIn({
+        email: credentials.email,
+        password: credentials.password,
+        rememberMe: false, // 이미 저장되어 있으므로 다시 저장하지 않음
+      });
+    } catch (error) {
+      console.error('Auto login error:', error);
+      // 자동 로그인 실패 시 저장된 자격증명 삭제
+      await clearCredentials();
+      return null;
+    }
   }
 
   /**

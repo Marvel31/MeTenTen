@@ -59,3 +59,42 @@ export const hasStorage = (key: string): boolean => {
   return localStorage.getItem(key) !== null;
 };
 
+/**
+ * 세션 스토리지에 데이터 저장
+ */
+export const setSessionStorage = <T>(key: string, value: T): void => {
+  try {
+    const serialized = JSON.stringify(value);
+    sessionStorage.setItem(key, serialized);
+  } catch (error) {
+    console.error('Failed to save to sessionStorage:', error);
+  }
+};
+
+/**
+ * 세션 스토리지에서 데이터 조회
+ */
+export const getSessionStorage = <T>(key: string): T | null => {
+  try {
+    const serialized = sessionStorage.getItem(key);
+    if (serialized === null) {
+      return null;
+    }
+    return JSON.parse(serialized) as T;
+  } catch (error) {
+    console.error('Failed to load from sessionStorage:', error);
+    return null;
+  }
+};
+
+/**
+ * 세션 스토리지에서 데이터 삭제
+ */
+export const removeSessionStorage = (key: string): void => {
+  try {
+    sessionStorage.removeItem(key);
+  } catch (error) {
+    console.error('Failed to remove from sessionStorage:', error);
+  }
+};
+

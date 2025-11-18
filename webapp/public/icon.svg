@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="512" height="512" fill="#FF6B9D" rx="64"/>
+  
+  <!-- 10&10 텍스트 -->
+  <text 
+    x="256" 
+    y="320" 
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" 
+    font-size="140" 
+    font-weight="700" 
+    fill="#FFFFFF" 
+    text-anchor="middle"
+    letter-spacing="-2">10&amp;10</text>
+</svg>
+

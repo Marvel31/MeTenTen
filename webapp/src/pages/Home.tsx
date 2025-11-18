@@ -2,54 +2,24 @@
  * 홈 페이지 (대시보드)
  */
 
-import { Card, Button, App } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { Card } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@stores/authStore';
-import { authService } from '@services/AuthService';
-import { SUCCESS_MESSAGES } from '@utils/constants';
 import { ROUTES } from '@config/routes';
 
-const Home: React.FC = () => {
-  const { message } = App.useApp();
+export default function Home() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await authService.signOut();
-      message.success(SUCCESS_MESSAGES.LOGOUT_SUCCESS);
-      navigate(ROUTES.LOGIN);
-    } catch (error) {
-      message.error('로그아웃에 실패했습니다.');
-    }
-  };
-
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '32px',
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: '32px' }}>
-            환영합니다, {user?.displayName}님! 🎉
-          </h1>
-          <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>
-            MeTenTen 웹앱에 오신 것을 환영합니다.
-          </p>
-        </div>
-        <Button
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          size="large"
-        >
-          로그아웃
-        </Button>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ margin: 0, fontSize: '32px' }}>
+          환영합니다, {user?.displayName}님! 🎉
+        </h1>
+        <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>
+          10&10 웹앱에 오신 것을 환영합니다.
+        </p>
       </div>
 
       <div
@@ -127,5 +97,5 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+// Export removed - using default export at function definition
 
