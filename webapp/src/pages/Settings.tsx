@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
                 <Text strong>연결일:</Text>{' '}
                 <Text>
                   {user?.partner?.connectedAt
-                    ? formatDate(new Date(user.partner.connectedAt), 'yyyy-MM-dd')
+                    ? formatDate(user.partner.connectedAt)
                     : '-'}
                 </Text>
               </div>

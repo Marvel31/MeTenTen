@@ -9,7 +9,6 @@ import { authService } from './AuthService';
 import { useAuthStore } from '@stores/authStore';
 import type { PartnerInfo } from '../types/user';
 import { getCurrentDateTime } from '@utils/date';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '@utils/constants';
 
 class PartnerService {
   /**

@@ -70,7 +70,7 @@ export const removeEmptyValues = <T extends Record<string, unknown>>(
   return Object.entries(obj).reduce(
     (acc, [key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
-        acc[key as keyof T] = value;
+        acc[key as keyof T] = value as T[keyof T];
       }
       return acc;
     },

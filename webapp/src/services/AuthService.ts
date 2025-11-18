@@ -21,7 +21,7 @@ import type {
   SignInRequest,
   ChangePasswordRequest,
   User,
-} from '@types/user';
+} from '../types';
 import { ERROR_MESSAGES } from '@utils/constants';
 import { saveCredentials, loadCredentials, clearCredentials } from '@utils/credentialStorage';
 

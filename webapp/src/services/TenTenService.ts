@@ -11,8 +11,8 @@ import type {
   CreateTenTenRequest,
   UpdateTenTenRequest,
   DecryptedTenTen,
-} from '@types/tenten';
-import type { EncryptionType } from '@types/common';
+  EncryptionType,
+} from '../types';
 
 class TenTenService {
   /**

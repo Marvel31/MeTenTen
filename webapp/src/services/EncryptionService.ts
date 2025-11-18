@@ -271,7 +271,7 @@ class EncryptionService {
     const keyData = this.base64ToArrayBuffer(base64Key);
     return await window.crypto.subtle.importKey(
       'raw',
-      keyData,
+      keyData as BufferSource,
       {
         name: this.ALGORITHM,
         length: this.KEY_LENGTH,

@@ -220,7 +220,7 @@ const MyTenTens: React.FC = () => {
       dataIndex: 'topicDate',
       key: 'topicDate',
       width: 120,
-      render: (date: string) => formatDate(new Date(date), 'yyyy-MM-dd'),
+      render: (date: string) => formatDate(date),
     },
     {
       title: '작업',
