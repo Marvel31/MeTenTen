@@ -198,6 +198,13 @@ const MyTenTens: React.FC = () => {
 
   const columns = useMemo(() => [
     {
+      title: '날짜',
+      dataIndex: 'topicDate',
+      key: 'topicDate',
+      width: 120,
+      render: (date: string) => formatDate(date),
+    },
+    {
       title: '주제',
       dataIndex: 'subject',
       key: 'subject',
@@ -214,13 +221,6 @@ const MyTenTens: React.FC = () => {
           {text}
         </Typography.Text>
       ),
-    },
-    {
-      title: '날짜',
-      dataIndex: 'topicDate',
-      key: 'topicDate',
-      width: 120,
-      render: (date: string) => formatDate(date),
     },
     {
       title: '작업',

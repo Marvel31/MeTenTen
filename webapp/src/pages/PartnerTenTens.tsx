@@ -70,6 +70,13 @@ const PartnerTenTens: React.FC = () => {
         (topic): topic is Topic => topic !== null
       );
 
+      // 날짜 기준 내림차순 정렬 (최근 날짜가 맨 위)
+      loadedTopics.sort((a, b) => {
+        const at = new Date(a.topicDate).getTime();
+        const bt = new Date(b.topicDate).getTime();
+        return bt - at; // 내림차순 (큰 값이 먼저)
+      });
+
       setTopics(loadedTopics);
     } catch (error) {
       console.error('Load partner topics error:', error);
@@ -123,6 +130,13 @@ const PartnerTenTens: React.FC = () => {
 
   const columns = [
     {
+      title: '날짜',
+      dataIndex: 'topicDate',
+      key: 'topicDate',
+      width: 120,
+      render: (date: string) => formatDate(new Date(date)),
+    },
+    {
       title: '주제',
       dataIndex: 'subject',
       key: 'subject',
@@ -139,13 +153,6 @@ const PartnerTenTens: React.FC = () => {
           {text}
         </Typography.Text>
       ),
-    },
-    {
-      title: '날짜',
-      dataIndex: 'topicDate',
-      key: 'topicDate',
-      width: 120,
-      render: (date: string) => formatDate(new Date(date)),
     },
   ];
 
